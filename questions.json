@@ -1,0 +1,116 @@
+{
+    "questions_list": [
+        {
+            "type": "MCQ",
+            "level": "EASY",
+            "concepts": [
+                "Computer Knowledge"
+            ],
+            "question": "Which type of language is Python?",
+            "options": [
+                "Compiled",
+                "Interpreted",
+                "Assembled",
+                "Executed"
+            ],
+            "correct_option": "Interpreted",
+            "hash": "MEeWCtdEr"
+        },
+        {
+            "type": "MCQ",
+            "level": "EASY",
+            "concepts": [
+                "Data Representation"
+            ],
+            "question": "What is the base of decimal number system?",
+            "options": [
+                "2",
+                "8",
+                "10",
+                "16"
+            ],
+            "correct_option": "10",
+            "hash": "MEph28110"
+        },
+        {
+            "type": "MCQ",
+            "level": "EASY",
+            "concepts": [
+                "Data Representation"
+            ],
+            "question": "What is the base of octal number system?",
+            "options": [
+                "2",
+                "8",
+                "10",
+                "16"
+            ],
+            "correct_option": "8",
+            "hash": "MEai28118"
+        },
+        {
+            "type": "MCQ",
+            "level": "EASY",
+            "concepts": [
+                "Data Representation"
+            ],
+            "question": "What is the base of hexadecimal number system?",
+            "options": [
+                "2",
+                "8",
+                "10",
+                "16"
+            ],
+            "correct_option": "16",
+            "hash": "MEe_28111"
+        },
+        {
+            "type": "MCQ",
+            "level": "EASY",
+            "concepts": [
+                "Data Representation"
+            ],
+            "question": "Which of the following is not a possible base for a number system?",
+            "options": [
+                "1",
+                "2",
+                "3",
+                "4"
+            ],
+            "correct_option": "1",
+            "hash": "MErh12341"
+        },
+        {
+            "type": "MCQ",
+            "level": "EASY",
+            "concepts": [
+                "Data Representation"
+            ],
+            "question": "How many digits in base-n number system?",
+            "options": [
+                "n",
+                "n+1",
+                "n-1",
+                "10-n"
+            ],
+            "correct_option": "n",
+            "hash": "MEp_n11-n"
+        },
+        {
+            "type": "MCQ",
+            "level": "EASY",
+            "concepts": [
+                "Modules"
+            ],
+            "question": "Which module can be used to calculate mean of a data set?",
+            "options": [
+                "statistics",
+                "math",
+                "random",
+                "average"
+            ],
+            "correct_option": "statistics",
+            "hash": "MEohatnet"
+        }
+    ]
+}
