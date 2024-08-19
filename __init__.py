@@ -10,5 +10,9 @@ cursor = connect.cursor()
 cursor.execute("create database if not exists programming_quiz")
 cursor.execute("use programming_quiz")
 
-cursor.execute("drop table if exists programming_quiz_admin_login")
-cursor.execute("create table programming_quiz_admin_login(user_id varchar(30) not null primary key, user_password varchar(20) not null)")
+try:
+    cursor.execute("create table programming_quiz_admin_login(user_id varchar(50) not null primary key, user_password varchar(50) not null)")
+except:
+    pass
+    
+
