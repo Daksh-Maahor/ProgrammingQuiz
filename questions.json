@@ -1,4 +1,12 @@
 {
+    "concepts_list": [
+        "Computer Knowledge",
+        "Data Representation",
+        "Modules",
+        "Data Handling",
+        "Data Types",
+        "Syntax Knowledge"
+    ],
     "questions_list": [
         {
             "type": "MCQ",
@@ -111,6 +119,56 @@
             ],
             "correct_option": "statistics",
             "hash": "MEohatnet"
+        },
+        {
+            "type": "MCQ",
+            "level": "EASY",
+            "concepts": [
+                "Data Handling"
+            ],
+            "question": "Which method is used to add an item to the end of a list in Python?",
+            "options": [
+                "append()",
+                "add()",
+                "insert()",
+                "addend()"
+            ],
+            "correct_option": "append()",
+            "hash": "MEdeaaiap"
+        },
+        {
+            "type": "MCQ",
+            "level": "MEDIUM",
+            "concepts": [
+                "Modules",
+                "Data Types"
+            ],
+            "question": "Which of the following is not immutable?",
+            "options": [
+                "tuple",
+                "string",
+                "int",
+                "list"
+            ],
+            "correct_option": "list",
+            "hash": "MMeTcprtss"
+        },
+        {
+            "type": "MCQ",
+            "level": "EASY",
+            "concepts": [
+                "Modules",
+                "Syntax Knowledge"
+            ],
+            "question": "Which of the following is used to create a list?",
+            "options": [
+                "[]",
+                "{}",
+                "()",
+                "<>"
+            ],
+            "correct_option": "[]",
+            "hash": "MEexc[{(<["
         }
     ]
 }
