@@ -1,5 +1,6 @@
 import json
 import random
+import __init__
 
 """
 

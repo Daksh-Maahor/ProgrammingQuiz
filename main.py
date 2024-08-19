@@ -1,6 +1,7 @@
 import pygame
 import json
 import random
+import __init__
 
 pygame.init()
 pygame.font.init()

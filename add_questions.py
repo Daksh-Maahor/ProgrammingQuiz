@@ -1,5 +1,6 @@
 import generate_qcodes
 import json
+import __init__
 
 def add_que():
     print("==== Add Questions to the Quiz ====")
