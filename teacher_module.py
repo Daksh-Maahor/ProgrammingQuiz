@@ -53,6 +53,38 @@ def sign_up():
         print()
         print()
         return
+    
+def update_passkey():
+    print("Enter UserID : ")
+    user_name = input(">> ")
+    print("Enter Password : ")
+    pass_key = input(">> ")
+    print()
+    
+    sql.cursor.execute(f'select user_id, user_password from programming_quiz_admin_login where user_id = "{user_name}"')
+    
+    data = sql.cursor.fetchall()
+    
+    if len(data) == 0:
+        print(f"UserID {user_name} doesn't exist. Please Sign Up")
+        print()
+        print()
+    else:
+        data = data[0]
+        if pass_key != data[1]:
+            print("Invalid Password")
+            print()
+            print()
+            return
+        else:
+            print("Enter new Password : ")
+            pass_key = input(">> ")
+            
+            sql.cursor.execute(f'update programming_quiz_admin_login set user_password="{pass_key}" where user_id="{user_name}"')
+            sql.connect.commit()
+            print("Password Changed Successfully!")
+            print()
+            print()
 
 def main():
     print("----   Programming Quiz   ----")
@@ -67,7 +99,8 @@ def main():
         print("Select An Option")
         print("1. Login")
         print("2. Sign Up")
-        print("3. Quit")
+        print("3. Change Password")
+        print("4. Quit")
 
         choice = input(">> ")
         
@@ -83,6 +116,8 @@ def main():
         elif choice == 2:
             sign_up()
         elif choice == 3:
+            update_passkey()
+        elif choice == 4:
             running = False
         else:
             print("Invalid Choice")
