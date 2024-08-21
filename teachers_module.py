@@ -2,6 +2,7 @@ import json
 import mysql.connector
 import __init__ as sql
 import teacher_login_module as admin
+import add_questions as que_add
 
 USER_NAME = None
 PASSWORD = None
@@ -17,9 +18,9 @@ def main():
     
     running = True
     
+    signed_in = False
+    
     while running:
-        
-        signed_in = True
         
         if USER_NAME == None or PASSWORD == None:
             print("Currently Signed Out")
@@ -37,6 +38,9 @@ def main():
         print("3. Change Password")
         print("4. Log Out")
         print("5. Quit")
+        
+        if signed_in:
+            print("6. Add New Question")
         
         print()
 
@@ -67,6 +71,13 @@ def main():
             PASSWORD = None
         elif choice == 5:
             running = False
+        elif choice == 6:
+            if signed_in:
+                que_add.add_que()
+            else:
+                print("Invalid Choice")
+                print()
+                continue
         else:
             print("Invalid Choice")
             print()

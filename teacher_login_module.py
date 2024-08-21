@@ -50,6 +50,7 @@ def sign_up(): # returns Nothing. as registration does not confirm login
         sql.cursor.execute(f'insert into programming_quiz_admin_login values("{user_name}", "{pass_key}")')
         sql.connect.commit()
         print("Registration Successful.")
+        sql.update_admins()
         print()
         print()
     else:

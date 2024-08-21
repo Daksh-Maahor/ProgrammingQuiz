@@ -5,7 +5,8 @@
         "Modules",
         "Data Handling",
         "Data Types",
-        "Syntax Knowledge"
+        "Syntax Knowledge",
+        "List Methods"
     ],
     "questions_list": [
         {
@@ -169,6 +170,23 @@
             ],
             "correct_option": "[]",
             "hash": "MEexc[{(<["
+        },
+        {
+            "type": "MCQ",
+            "level": "EASY",
+            "concepts": [
+                "Syntax Knowledge",
+                "List Methods"
+            ],
+            "question": "Which method is used to remove an element from a list by value?",
+            "options": [
+                "remove()",
+                "pop()",
+                "del",
+                "discard()"
+            ],
+            "correct_option": "remove()",
+            "hash": "MEyih(odde"
         }
     ]
 }

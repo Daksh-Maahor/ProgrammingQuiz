@@ -125,7 +125,7 @@ def add_que():
         data = {"concepts_list" : CONCEPTS_LIST, "questions_list" : questions_list}
         
         f.seek(0)
-        json.dump(data, f, indent=5)
+        json.dump(data, f, indent=4)
         f.truncate()
         
         generate_qcodes.generate()
