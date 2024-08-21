@@ -92,5 +92,20 @@ def update_passkey() -> str: # returns password, as that's what has changed
             print()
             print()
             
+            data = []
+            
+            with open("students.json", 'rt') as f:
+                data = json.load(f)
+                
+            for i in data:
+                if i["Username"] == user_name:
+                    i["Password"] = pass_key
+                    break
+            
+            with open("students.json", 'wt') as f:
+                f.seek(0)
+                json.dump(data, f, indent=4)
+                f.truncate()
+            
             return pass_key
 
