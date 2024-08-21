@@ -3,10 +3,8 @@ import mysql
 import mysql.connector
 import __init__ as sql
 
-def log_out():
-    pass
 
-def login():
+def login() -> tuple[str, str]:  # returns (username, password). None in both if login fails.
     print("Enter UserID : ")
     user_name = input(">> ")
     print("Enter Password : ")
@@ -32,10 +30,12 @@ def login():
             print(f"Welcome {user_name}")
             print()
             print()
+            
+            return user_name, pass_key
     
     return None, None
 
-def sign_up():
+def sign_up(): # returns Nothing. as registration does not confirm login
     print("Enter UserID : ")
     user_name = input(">> ")
     print("Enter Password : ")
@@ -58,7 +58,7 @@ def sign_up():
         print()
         return
     
-def update_passkey():
+def update_passkey() -> str: # returns password, as that's what has changed
     print("Enter UserID : ")
     user_name = input(">> ")
     print("Enter Password : ")
@@ -73,13 +73,14 @@ def update_passkey():
         print(f"UserID {user_name} doesn't exist. Please Sign Up")
         print()
         print()
+        return pass_key
     else:
         data = data[0]
         if pass_key != data[1]:
             print("Invalid Password")
             print()
             print()
-            return
+            return pass_key
         else:
             print("Enter new Password : ")
             pass_key = input(">> ")
@@ -89,4 +90,6 @@ def update_passkey():
             print("Password Changed Successfully!")
             print()
             print()
+            
+            return pass_key
 
