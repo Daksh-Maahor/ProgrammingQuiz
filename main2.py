@@ -1,6 +1,5 @@
 import json
 import random
-import __init__
 
 """
 
@@ -83,7 +82,7 @@ QUESTIONS_ALL = None # List of all questions
 QID_LIST = None
 
 #Total no of questions to be taken out of the database
-NUM_QUESTIONS_IN_QUIZ = 2
+NUM_QUESTIONS_IN_QUIZ = 4
 
 'QUESTION LEVELS'
 
@@ -221,4 +220,4 @@ def quiz_state_next_right():
 class MenuState:
     def __init__(self) -> None:
         self.counter = 0
-        
+    

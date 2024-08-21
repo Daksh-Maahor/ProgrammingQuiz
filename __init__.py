@@ -16,7 +16,12 @@ try:
 except:
     pass
 
-def update_admins():
+try:
+    cursor.execute("create table programming_quiz_student_login(user_id varchar(50) not null primary key, user_password varchar(50) not null)")
+except:
+    pass
+
+def update_admins_and_students():
     with open("admins.json", 'wt') as f:
         try:
             cursor.execute("select * from programming_quiz_admin_login")
@@ -31,5 +36,20 @@ def update_admins():
             f.truncate()
         except:
             pass
+        
+    with open("students.json", 'wt') as f:
+        try:
+            cursor.execute("select * from programming_quiz_student_login")
+            data = cursor.fetchall()
+            
+            students = []
+            for i in data:
+                students.append({"Username" : i[0], "Password" : i[1]})
+            
+            f.seek(0)
+            json.dump(students, f, indent=4)
+            f.truncate()
+        except:
+            pass
 
-update_admins()
+update_admins_and_students()
