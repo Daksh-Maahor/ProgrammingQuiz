@@ -3,6 +3,9 @@ import mysql
 import mysql.connector
 import __init__ as sql
 
+def log_out():
+    pass
+
 def login():
     print("Enter UserID : ")
     user_name = input(">> ")
@@ -24,12 +27,13 @@ def login():
             print("Invalid Password")
             print()
             print()
-            return
         else:
             print("Login Successful")
             print(f"Welcome {user_name}")
             print()
             print()
+    
+    return None, None
 
 def sign_up():
     print("Enter UserID : ")
@@ -86,43 +90,3 @@ def update_passkey():
             print()
             print()
 
-def main():
-    print("----   Programming Quiz   ----")
-    print("----   Teacher's Module   ----")
-
-    print()
-    
-    running = True
-    
-    while running:
-
-        print("Select An Option")
-        print("1. Login")
-        print("2. Sign Up")
-        print("3. Change Password")
-        print("4. Quit")
-
-        choice = input(">> ")
-        
-        if not choice.isnumeric():
-            print("Invalid Choice")
-            print()
-            continue
-        
-        choice = int(choice)
-
-        if choice == 1:
-            login()
-        elif choice == 2:
-            sign_up()
-        elif choice == 3:
-            update_passkey()
-        elif choice == 4:
-            running = False
-        else:
-            print("Invalid Choice")
-            print()
-            continue
-    
-if __name__ == "__main__":
-    main()
