@@ -1,5 +1,6 @@
 import json
 import random
+import time
 
 """
 
@@ -127,14 +128,14 @@ def load_questions():
     with open('questions.json', 'rt') as f:
         QUESTIONS_ALL = json.load(f)['questions_list']
         
-        print("Questions: \n\n")
+        """print("Questions: \n\n")
         
         for j, i in enumerate(QUESTIONS_ALL):
             print(j)
             pretty_print(i)
-            print()
+            print()"""
     QID_LIST = [i['hash'] for i in QUESTIONS_ALL]
-    pretty_print_list(QID_LIST, 'QIDs')
+    #pretty_print_list(QID_LIST, 'QIDs')
     f.close()
     
     l = len(QUESTIONS_ALL)
@@ -156,18 +157,18 @@ def load_questions():
             random.shuffle(q_list)
             j += 1
     
-    print('\nQUESTIONS : \n')
+    #print('\nQUESTIONS : \n')
     
-    for que in QUESTIONS_LIST:
+    """for que in QUESTIONS_LIST:
         pretty_print(que, 1)
-        print()
+        print()"""
         
 #print score analysis        
 def display_analysis(quiz_state):
     'print(quiz_state.analysis)'
     pretty_print(quiz_state.analysis)
     
-'STATE SWITCH FUNCTIONS'
+"""'STATE SWITCH FUNCTIONS'
 
 def to_game_state():
     global CURRENT_STATE, QUIZ_STATE
@@ -212,12 +213,140 @@ def quiz_state_next_right():
     if QUIZ_STATE.current_que_no < len(QUIZ_STATE.questions) - 1:
         QUIZ_STATE.current_que_no += 1
     else:
-        to_exit_state()
+        to_exit_state()"""
         
 
 'Classes'
 
-class MenuState:
-    def __init__(self) -> None:
-        self.counter = 0
+class Question:
+    def __init__(self, number, level, concepts_used, question, hash) -> None:
+        self.number = number
+        self.level = level
+        self.concepts_used = concepts_used
+        self.question = question
+        self.time_taken = 0
+        self.type = ''
+        self.hash = hash
+        
+    def render() -> bool:
+        print("Render function not defined in this class")
+        return False
+        
+class MCQ(Question):
+    def __init__(self, number, level, concepts_used, question, options, correct_option, hash) -> None:
+        super().__init__(number, level, concepts_used, question, hash)
+        self.options = options
+        self.type = 'MCQ'
+        self.correct_option = correct_option
+        
+    def render(self) -> bool: # prints the question and returns whether the answer was correct or not
+        print(f'Q{self.number}. {self.question}')
+        random.shuffle(self.options)
+        
+        for i, option in enumerate(self.options):
+            print(f"{i+1}. {option}")
+            
+        print("Enter option (1, 2, 3, 4)")
+        
+        ans = input(">> ")
+        
+        if not ans.isnumeric():
+            return False
+        
+        ans = int(ans)
+        
+        if 1 <= ans <= 4:
+            return self.options[ans-1] == self.correct_option
+        else:
+            return False
+        
+    def __repr__(self) -> str:
+        return f'( {self.number}, {self.level}, {self.concepts_used}, {self.question}, {self.options} )'
+    
+####
+
+    """
+
+        TODO:
+        
+        Store Quiz accuracy according to various parameters (que difficulty, que type etc)
+    
+    """
+
+####
+class QuizState:
+    def __init__(self, stu_name) -> None:
+        self.stu_name = stu_name
+        
+        
+        self.questions = []
+        
+        self.times = {}
+        self.accuracy = {}
+        
+        self.analysis = {}
+        self.que_level_report = dict.fromkeys(LEVELS_QUE)
+        self.que_type_report = dict.fromkeys(TYPES_QUE)
+        self.overall_report = {"correct" : 0, "incorrect" : 0}
+        
+        self.wrong_ids = []
+        self.right_ids = []
+        
+        for lvl in LEVELS_QUE:
+            self.que_level_report[lvl] = {"correct" : 0, "incorrect" : 0}
+        
+        for qtype in TYPES_QUE:
+            self.que_type_report[qtype] = {"correct" : 0, "incorrect" : 0}
+        
+        for question in QUESTIONS_LIST:
+            que = None
+            if question['type'] == 'MCQ':
+                que = MCQ(0, question['level'], question['concepts'], question['question'], question['options'], question['correct_option'], question['hash'])
+                
+            self.questions.append(que)
+            
+        'print(self.questions)'
+        
+        random.shuffle(self.questions)
+        
+        for i, question in enumerate(self.questions):
+            question.number = i+1
+        
+        #print("Printing from quizState: ", self.questions)
+        
+    def render(self):
+        for i in self.questions:
+            t1 = round(time.time_ns() / 1000000000, 2)
+            correct = i.render()
+            t2 = round(time.time_ns() / 1000000000, 2)
+
+            self.times[i.hash] = round(t2 - t1, 2)
+            self.accuracy[i.hash] = correct
+            
+            if correct:
+                self.right_ids.append(i.hash)
+                self.overall_report["correct"] += 1
+            else:
+                self.wrong_ids.append(i.hash)
+                self.overall_report["incorrect"] += 1
+        
+        self.analysis["times"] = self.times
+        self.analysis["accuracy"] = self.accuracy
+        self.analysis["level_report"] = self.que_level_report
+        self.analysis["type_report"] = self.que_type_report
+        self.analysis["overall_report"] = self.overall_report
+        self.analysis["correct_que_ids"] = self.right_ids
+        self.analysis["incorrect_que_ids"] = self.wrong_ids
+        
+        display_analysis(self)
+                
+            
+        
+def play(STU_NAME):
+    load_questions()
+    quiz = QuizState(STU_NAME)
+    quiz.render()
+
+if __name__ == "__main__":
+    play("Tutorial")
     
