@@ -2,6 +2,7 @@ import json
 import random
 import __init__
 import students_login_module as admin
+import quiz_module as quiz
 
         
         
@@ -76,8 +77,7 @@ def main():
         elif choice == 6:
             if signed_in:
                 #PLAY QUIZ HERE
-                
-                pass
+                quiz.play(USER_NAME)
             else:
                 print("Invalid Choice")
                 print()
@@ -86,6 +86,7 @@ def main():
             print("Invalid Choice")
             print()
             continue
+    
 
 if __name__ == "__main__":
     main()

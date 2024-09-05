@@ -1,5 +1,6 @@
 import mysql.connector as sql
 import json
+import traceback
 
 connect = sql.connect(host="localhost", user="root", passwd="meradav@2007")
 
@@ -22,34 +23,81 @@ except:
     pass
 
 def update_admins_and_students():
+    file_data = []
+    with open("admins.json", "rt") as f:
+        try:
+            file_data = json.load(f)
+            print(file_data)
+        except Exception as err:
+            traceback.print_tb(err.__traceback__)
+    
     with open("admins.json", 'wt') as f:
         try:
             cursor.execute("select * from programming_quiz_admin_login")
-            data = cursor.fetchall()
+            sql_data = cursor.fetchall()
             
+            user_names = []
             admins = []
-            for i in data:
-                admins.append({"Username" : i[0], "Password" : i[1]})
+            for i in file_data:
+                if not i['Username'] in user_names:
+                    admins.append({"Username" : i['Username'], "Password" : i['Password']})
+                    user_names.append(i['Username'])
+            
+            for i in sql_data:
+                if not i[0] in user_names:
+                    admins.append({"Username" : i[0], "Password" : i[1]})
+                    user_names.append(i[0])
             
             f.seek(0)
             json.dump(admins, f, indent=4)
             f.truncate()
-        except:
-            pass
-        
+            
+            cursor.execute("truncate programming_quiz_admin_login")
+            connect.commit()
+            
+            for i in admins:
+                cursor.execute(f'insert into programming_quiz_admin_login values("{i['Username']}", "{i['Password']}")')
+                connect.commit()
+        except Exception as err:
+            traceback.print_tb(err.__traceback__)
+    
+    file_data = []
+    with open("students.json", "rt") as f:
+        try:
+            file_data = json.load(f)
+            print(file_data)
+        except Exception as err:
+            traceback.print_tb(err.__traceback__)
+    
     with open("students.json", 'wt') as f:
         try:
             cursor.execute("select * from programming_quiz_student_login")
-            data = cursor.fetchall()
+            sql_data = cursor.fetchall()
             
+            user_names = []
             students = []
-            for i in data:
-                students.append({"Username" : i[0], "Password" : i[1]})
+            for i in file_data:
+                if not i['Username'] in user_names:
+                    students.append({"Username" : i['Username'], "Password" : i['Password']})
+                    user_names.append(i['Username'])
+            
+            for i in sql_data:
+                if not i[0] in user_names:
+                    students.append({"Username" : i[0], "Password" : i[1]})
+                    user_names.append(i[0])
             
             f.seek(0)
             json.dump(students, f, indent=4)
             f.truncate()
-        except:
-            pass
+            
+            cursor.execute("truncate programming_quiz_student_login")
+            connect.commit()
+            
+            for i in students:
+                cursor.execute(f'insert into programming_quiz_student_login values("{i['Username']}", "{i['Password']}")')
+                connect.commit()
+        except Exception as err:
+            traceback.print_tb(err.__traceback__)
+    
 
 update_admins_and_students()
