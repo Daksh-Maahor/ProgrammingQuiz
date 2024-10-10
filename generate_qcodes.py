@@ -1,12 +1,13 @@
 import json
+import pickle
 
 def generate():
     QUESTIONS_ALL = []
-    with open('questions.json', 'rt') as f:
+    with open('data/questions.bin', 'rb') as f:
         "print('Start')"
-        jsonn = json.load(f)
-        QUESTIONS_ALL = jsonn['questions_list']
-        CONCEPTS = jsonn['concepts_list']
+        data = pickle.load(f)
+        QUESTIONS_ALL = data['questions_list']
+        CONCEPTS = data['concepts_list']
         
         '''for question in QUESTIONS_LIST:
             if (len(question["question"]) > NUM_CHAR_BEFORE_SPACE):
@@ -57,8 +58,8 @@ def generate():
         
     obj = {'concepts_list': CONCEPTS, 'questions_list' : QUESTIONS_ALL}
 
-    with open('questions.json', 'wt') as f:
-        json.dump(obj, f, indent=4)
+    with open('data/questions.bin', 'wb') as f:
+        pickle.dump(obj, f)
         
     f.close()
     

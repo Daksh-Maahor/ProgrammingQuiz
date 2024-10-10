@@ -1,13 +1,13 @@
 import generate_qcodes
-import json
+import pickle
 import __init__
 
 def add_que():
     print("==== Add Questions to the Quiz ====")
 
-    with open("questions.json", 'rt+') as f:
-        jsonnn = json.load(f)
-        questions_list = jsonnn['questions_list']
+    with open("data/questions.bin", 'rb+') as f:
+        data = pickle.load(f)
+        questions_list = data['questions_list']
         #print(questions_list)
         print()
         print("Select Question Type")
@@ -52,7 +52,7 @@ def add_que():
         
         print()
         
-        CONCEPTS_LIST = jsonnn["concepts_list"]
+        CONCEPTS_LIST = data["concepts_list"]
         
         concepts = []
         
@@ -124,9 +124,7 @@ def add_que():
         
         data = {"concepts_list" : CONCEPTS_LIST, "questions_list" : questions_list}
         
-        f.seek(0)
-        json.dump(data, f, indent=4)
-        f.truncate()
+        pickle.dump(data, f)
         
         generate_qcodes.generate()
         

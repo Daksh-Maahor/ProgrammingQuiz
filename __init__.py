@@ -1,6 +1,6 @@
 import mysql.connector as sql
-import json
 import traceback
+import pickle
 
 connect = sql.connect(host="localhost", user="root", passwd="meradav@2007")
 
@@ -24,14 +24,14 @@ except:
 
 def update_admins_and_students():
     file_data = []
-    with open("admins.json", "rt") as f:
+    with open("data/admins.bin", "rb") as f:
         try:
-            file_data = json.load(f)
+            file_data = pickle.load(f)
             print(file_data)
         except Exception as err:
             traceback.print_tb(err.__traceback__)
     
-    with open("admins.json", 'wt') as f:
+    with open("data/admins.bin", 'wb') as f:
         try:
             cursor.execute("select * from programming_quiz_admin_login")
             sql_data = cursor.fetchall()
@@ -48,9 +48,7 @@ def update_admins_and_students():
                     admins.append({"Username" : i[0], "Password" : i[1]})
                     user_names.append(i[0])
             
-            f.seek(0)
-            json.dump(admins, f, indent=4)
-            f.truncate()
+            pickle.dump(admins, f)
             
             cursor.execute("truncate programming_quiz_admin_login")
             connect.commit()
@@ -62,14 +60,14 @@ def update_admins_and_students():
             traceback.print_tb(err.__traceback__)
     
     file_data = []
-    with open("students.json", "rt") as f:
+    with open("data/students.bin", "rb") as f:
         try:
-            file_data = json.load(f)
+            file_data = pickle.load(f)
             print(file_data)
         except Exception as err:
             traceback.print_tb(err.__traceback__)
     
-    with open("students.json", 'wt') as f:
+    with open("data/students.bin", 'wb') as f:
         try:
             cursor.execute("select * from programming_quiz_student_login")
             sql_data = cursor.fetchall()
@@ -86,9 +84,7 @@ def update_admins_and_students():
                     students.append({"Username" : i[0], "Password" : i[1]})
                     user_names.append(i[0])
             
-            f.seek(0)
-            json.dump(students, f, indent=4)
-            f.truncate()
+            pickle.dump(students, f)
             
             cursor.execute("truncate programming_quiz_student_login")
             connect.commit()

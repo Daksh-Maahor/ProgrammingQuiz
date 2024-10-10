@@ -1,5 +1,3 @@
-import json
-import random
 import __init__
 import students_login_module as admin
 import quiz_module as quiz

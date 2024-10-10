@@ -1,4 +1,3 @@
-import json
 import mysql.connector
 import __init__ as sql
 import teacher_login_module as admin

@@ -1,4 +1,4 @@
-import json
+import pickle
 import mysql
 import mysql.connector
 import __init__ as sql
@@ -94,18 +94,16 @@ def update_passkey() -> str: # returns password, as that's what has changed
             
             data = []
             
-            with open("admins.json", 'rt') as f:
-                data = json.load(f)
+            with open("data/admins.bin", 'rb') as f:
+                data = pickle.load(f)
                 
             for i in data:
                 if i["Username"] == user_name:
                     i["Password"] = pass_key
                     break
             
-            with open("admins.json", 'wt') as f:
-                f.seek(0)
-                json.dump(data, f, indent=4)
-                f.truncate()
+            with open("data/admins.bin", 'wb') as f:
+                pickle.dump(data, f, indent=4)
             
             return pass_key
 

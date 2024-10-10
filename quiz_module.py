@@ -1,4 +1,4 @@
-import json
+import pickle
 import random
 import time
 
@@ -125,8 +125,8 @@ def pretty_print_list(lst, title='', indent=0):
 def load_questions():
     global QUESTIONS_LIST, QUESTIONS_ALL, QID_LIST
     QUESTIONS_ALL = []
-    with open('questions.json', 'rt') as f:
-        QUESTIONS_ALL = json.load(f)['questions_list']
+    with open('data/questions.bin', 'rb') as f:
+        QUESTIONS_ALL = pickle.load(f)['questions_list']
         
         """print("Questions: \n\n")
         
