@@ -1,6 +1,7 @@
 import __init__
 import students_login_module as admin
 import quiz_module as quiz
+import pickle
         
 USER_NAME = None
 PASSWORD = None
@@ -73,7 +74,36 @@ def main():
         elif choice == 6:
             if signed_in:
                 #PLAY QUIZ HERE
-                quiz.play(USER_NAME)
+                analysis = quiz.play(USER_NAME)
+                with open("data/user_stats.bin", 'rb') as f:
+                    data = pickle.load(f)
+                
+                found = False
+                for i in data:
+                    if i["User_name"] == USER_NAME:
+                        found = True
+                        i["Analysis"]["times"].update(analysis["times"])
+                        i["Analysis"]["accuracy"].update(analysis["accuracy"])
+                        i["Analysis"]["level_report"].update(analysis["level_report"])
+                        i["Analysis"]["type_report"].update(analysis["type_report"])
+                        i["Analysis"]["overall_report"].update(analysis["overall_report"])
+                        for j in analysis["correct_que_ids"]:
+                            if j in i["Analysis"]["incorrect_que_ids"]:
+                                i["Analysis"]["incorrect_que_ids"].remove(j)
+                            if not j in i["Analysis"]["correct_que_ids"]:
+                                i["Analysis"]["correct_que_ids"].append(j)
+
+                        for j in analysis["incorrect_que_ids"]:
+                            if j in i["Analysis"]["correct_que_ids"]:
+                                i["Analysis"]["correct_que_ids"].remove(j)
+                            if not j in i["Analysis"]["incorrect_que_ids"]:
+                                i["Analysis"]["incorrect_que_ids"].append(j)
+                if not found:
+                    new_data = {"User_name" : USER_NAME, "Analysis" : analysis}
+                    data.append(new_data)
+
+                with open("data/user_stats.bin", 'wb') as f:
+                    pickle.dump(data, f)
             else:
                 print("Invalid Choice")
                 print()

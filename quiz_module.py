@@ -326,9 +326,13 @@ class QuizState:
             if correct:
                 self.right_ids.append(i.hash)
                 self.overall_report["correct"] += 1
+                self.que_level_report[i.level]["correct"] += 1
+                self.que_type_report[i.type]["correct"] += 1
             else:
                 self.wrong_ids.append(i.hash)
                 self.overall_report["incorrect"] += 1
+                self.que_level_report[i.level]["incorrect"] += 1
+                self.que_type_report[i.type]["incorrect"] += 1
         
         self.analysis["times"] = self.times
         self.analysis["accuracy"] = self.accuracy
@@ -339,14 +343,15 @@ class QuizState:
         self.analysis["incorrect_que_ids"] = self.wrong_ids
         
         display_analysis(self)
+        return self.analysis
                 
             
         
 def play(STU_NAME):
     load_questions()
     quiz = QuizState(STU_NAME)
-    quiz.render()
+    return quiz.render()
 
 if __name__ == "__main__":
-    play("Tutorial")
+    play("")
     

@@ -45,3 +45,12 @@ with open('data/questions.bin', 'rb') as f:
     data = pickle.load(f)
     print(type(data))
     pretty_print(data)
+
+print("\n\n\n")
+
+print("User Statistics : ")
+
+with open("data/user_stats.bin", 'rb') as f:
+    data = pickle.load(f)
+    print(type(data))
+    pretty_print_list(data)
