@@ -1,4 +1,10 @@
 import pickle
+import clear_data_module
+from clear_data_module import CDM_CHOICE_DATA_CLEAR, CDM_CHOICE_SELECTED_DATA_CLEAR
+
+VM_CHOICE_DATA_VIEW = 1
+VM_CHOICE_DATA_CLEAR = 2
+VM_CHOICE_SELECTED_DATA_CLEAR = 3
 
 # to print the data in dictionaries
 def pretty_print(dictionary, indent=0):
@@ -23,36 +29,83 @@ def pretty_print_list(lst, title='', indent=0):
         else:
             print('   '*(indent+1), i)
 
-print("Admins Data : ")
+def main(choiceee, passwd=None):
+    if choiceee == VM_CHOICE_DATA_VIEW:
 
-with open('data/admins.bin', 'rb') as f:
-    data = pickle.load(f)
-    print(type(data))
-    pretty_print_list(data)
+        print("Select : ")
+        print("1. Admins Data")
+        print("2. Students Data")
+        print("3. Questions Data")
+        print("4. User Statistics")
 
-print('\n\n\n')
+        choice = input(">> ")
 
-print("Students Data : ")
+        if not choice.isnumeric():
+            print("Invalid choice")
+        else:
+            choice = int(choice)
+            if choice == 1:
 
-with open('data/students.bin', 'rb') as f:
-    data = pickle.load(f)
-    print(type(data))
-    pretty_print_list(data)
+                print("Admins Data : ")
 
-print('\n\n\n')
+                with open('data/admins.bin', 'rb') as f:
 
-print("Questions Data : ")
+                    data = pickle.load(f)
+                    print(type(data))
+                    print(f"Num of admins {len(data)}")
+                    pretty_print_list(data)
 
-with open('data/questions.bin', 'rb') as f:
-    data = pickle.load(f)
-    print(type(data))
-    pretty_print(data)
+                print('\n\n\n')
 
-print("\n\n\n")
+            elif choice == 2:
 
-print("User Statistics : ")
+                print("Students Data : ")
 
-with open("data/user_stats.bin", 'rb') as f:
-    data = pickle.load(f)
-    print(type(data))
-    pretty_print_list(data)
+                with open('data/students.bin', 'rb') as f:
+                    data = pickle.load(f)
+                    print(type(data))
+                    print(f"Num of students {len(data)}")
+                    pretty_print_list(data)
+
+                print('\n\n\n')
+
+            elif choice == 3:
+
+                print("Questions Data : ")
+
+                with open('data/questions.bin', 'rb') as f:
+                    data = pickle.load(f)
+                    print(type(data))
+                    pretty_print(data)
+
+                print("\n\n\n")
+
+            elif choice == 4:
+
+                print("User Statistics : ")
+
+                with open("data/user_stats.bin", 'rb') as f:
+                    data = pickle.load(f)
+                    print(type(data))
+                    pretty_print_list(data)
+            else:
+                print("Invalid choice")
+    elif choiceee == VM_CHOICE_DATA_CLEAR:
+        clear_data_module.main(CDM_CHOICE_DATA_CLEAR, passwd)
+    elif choiceee == VM_CHOICE_SELECTED_DATA_CLEAR:
+        clear_data_module.main(CDM_CHOICE_SELECTED_DATA_CLEAR, passwd)
+
+if __name__ == "__main__":
+    print("Select : ")
+    print("1. View Data")
+    print("2. Clear Whole Data")
+    print("3. Clear Specific Entries")
+
+    choiceee = input(">> ")
+
+    if not choiceee.isnumeric():
+        print("Invalid Choice")
+    else:
+        choiceee = int(choiceee)
+
+        main(choiceee)

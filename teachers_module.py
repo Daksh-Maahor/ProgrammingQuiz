@@ -1,7 +1,7 @@
-import mysql.connector
-import __init__ as sql
 import teacher_login_module as admin
 import add_questions as que_add
+import view_data
+from view_data import VM_CHOICE_DATA_VIEW, VM_CHOICE_DATA_CLEAR, VM_CHOICE_SELECTED_DATA_CLEAR
 
 USER_NAME = None
 PASSWORD = None
@@ -40,6 +40,7 @@ def main():
         
         if signed_in:
             print("6. Add New Question")
+            print("7. View Data")
         
         print()
 
@@ -73,6 +74,13 @@ def main():
         elif choice == 6:
             if signed_in:
                 que_add.add_que()
+            else:
+                print("Invalid Choice")
+                print()
+                continue
+        elif choice == 7:
+            if signed_in:
+                view_data.main(VM_CHOICE_DATA_VIEW, PASSWORD)
             else:
                 print("Invalid Choice")
                 print()
