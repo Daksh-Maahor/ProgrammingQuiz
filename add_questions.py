@@ -1,6 +1,5 @@
 import generate_qcodes
 import pickle
-import __init__
 
 def add_que():
     print("==== Add Questions to the Quiz ====")

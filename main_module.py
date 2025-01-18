@@ -1,6 +1,9 @@
-import __init__
 import teachers_module
 import students_module
+
+IS_TEACHER = 1
+IS_STUDENT = 2
+QUIT = 3
 
 def main():
     running = True
@@ -16,11 +19,11 @@ def main():
         if choice.isnumeric():
             choice = int(choice)
 
-            if choice == 1:
+            if choice == IS_TEACHER:
                 teachers_module.main()
-            elif choice == 2:
+            elif choice == IS_STUDENT:
                 students_module.main()
-            elif choice == 3:
+            elif choice == QUIT:
                 running = False
             else:
                 print("Not a valid option")

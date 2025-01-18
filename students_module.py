@@ -1,4 +1,5 @@
-import students_login_module as admin
+import common_login_module as admin
+from common_login_module import STUDENTS_DATABASE
 import quiz_module as quiz
 import pickle
         
@@ -54,15 +55,15 @@ def main():
 
         if choice == 1:
             if not signed_in:
-                USER_NAME, PASSWORD = admin.login()
+                USER_NAME, PASSWORD = admin.login(STUDENTS_DATABASE)
                 signed_in = True
             else:
                 print(f"You are already signed in as {USER_NAME}")
                 print("Log Out First")
         elif choice == 2:
-            admin.sign_up()
+            admin.sign_up(STUDENTS_DATABASE)
         elif choice == 3:
-            PASSWORD = admin.update_passkey()
+            PASSWORD = admin.update_passkey(STUDENTS_DATABASE)
         elif choice == 4:
             # log_out
             signed_in = False

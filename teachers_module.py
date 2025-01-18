@@ -1,4 +1,5 @@
-import teacher_login_module as admin
+import common_login_module as admin
+from common_login_module import TEACHERS_DATABASE
 import add_questions as que_add
 import view_data
 from view_data import VM_CHOICE_DATA_VIEW, VM_CHOICE_DATA_CLEAR, VM_CHOICE_SELECTED_DATA_CLEAR
@@ -55,15 +56,15 @@ def main():
 
         if choice == 1:
             if not signed_in:
-                USER_NAME, PASSWORD = admin.login()
+                USER_NAME, PASSWORD = admin.login(TEACHERS_DATABASE)
                 signed_in = True
             else:
                 print(f"You are already signed in as {USER_NAME}")
                 print("Log Out First")
         elif choice == 2:
-            admin.sign_up()
+            admin.sign_up(TEACHERS_DATABASE)
         elif choice == 3:
-            PASSWORD = admin.update_passkey()
+            PASSWORD = admin.update_passkey(TEACHERS_DATABASE)
         elif choice == 4:
             # log_out
             signed_in = False
