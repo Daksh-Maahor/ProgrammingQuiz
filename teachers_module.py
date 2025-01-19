@@ -1,5 +1,5 @@
 import common_login_module as admin
-from common_login_module import TEACHERS_DATABASE
+from common_login_module import TEACHERS_DATABASE, STUDENTS_DATABASE
 import add_questions as que_add
 import view_data
 from view_data import VM_CHOICE_DATA_VIEW, VM_CHOICE_DATA_CLEAR, VM_CHOICE_SELECTED_DATA_CLEAR
@@ -33,15 +33,18 @@ def main():
         print()
 
         print("Select An Option")
-        print("1. Login")
-        print("2. Sign Up")
-        print("3. Change Password")
-        print("4. Log Out")
-        print("5. Quit")
-        
+        if not signed_in:
+            print("1. Login")
+            print("2. Sign Up")
+            print("3. Quit")
+            
         if signed_in:
-            print("6. Add New Question")
-            print("7. View Data")
+            print("1. Change Password")
+            print("2. Register Student")
+            print("3. Add New Question")
+            print("4. View Data")
+            print("5. Log Out")
+            print("6. Quit")
         
         print()
 
@@ -54,43 +57,35 @@ def main():
         
         choice = int(choice)
 
-        if choice == 1:
-            if not signed_in:
-                USER_NAME, PASSWORD = admin.login(TEACHERS_DATABASE)
+        if not signed_in:
+            if choice == 1: # sign in
+                USER_NAME, _, PASSWORD = admin.login(TEACHERS_DATABASE)
                 signed_in = True
+            elif choice == 2: # sign up
+                admin.sign_up(TEACHERS_DATABASE)
+            elif choice == 3:
+                running = False
             else:
-                print(f"You are already signed in as {USER_NAME}")
-                print("Log Out First")
-        elif choice == 2:
-            admin.sign_up(TEACHERS_DATABASE)
-        elif choice == 3:
-            PASSWORD = admin.update_passkey(TEACHERS_DATABASE)
-        elif choice == 4:
-            # log_out
-            signed_in = False
-            USER_NAME = None
-            PASSWORD = None
-        elif choice == 5:
-            running = False
-        elif choice == 6:
-            if signed_in:
+                print("Invalid Choice")
+                print()
+                continue
+        
+        elif signed_in:
+            if choice == 1:
+                PASSWORD = admin.update_passkey(TEACHERS_DATABASE, USER_NAME)
+            elif choice == 2:
+                admin.sign_up(STUDENTS_DATABASE, USER_NAME)
+            elif choice == 3:
                 que_add.add_que()
-            else:
-                print("Invalid Choice")
-                print()
-                continue
-        elif choice == 7:
-            if signed_in:
+            elif choice == 4:
                 view_data.main(VM_CHOICE_DATA_VIEW, PASSWORD)
+            elif choice == 5:
+                signed_in = False
+                USER_NAME = None
+                PASSWORD = None
+            elif choice == 6:
+                running = False
             else:
                 print("Invalid Choice")
                 print()
                 continue
-        else:
-            print("Invalid Choice")
-            print()
-            continue
-    
-if __name__ == "__main__":
-    main()
-

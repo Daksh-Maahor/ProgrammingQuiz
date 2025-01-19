@@ -1,6 +1,7 @@
 import pickle
 import clear_data_module
 from clear_data_module import CDM_CHOICE_DATA_CLEAR, CDM_CHOICE_SELECTED_DATA_CLEAR
+from __init__ import CURSOR
 
 VM_CHOICE_DATA_VIEW = 1
 VM_CHOICE_DATA_CLEAR = 2

@@ -4,7 +4,7 @@ import getpass
 STUDENTS_DATABASE = "data/students.bin"
 TEACHERS_DATABASE = "data/admins.bin"
 
-def login(database) -> tuple[str, str]:  # returns (username, password). None in both if login fails.
+def login(database) -> tuple[str, str, str]:  # returns (username, mentor_name, password). None in both if login fails.
 
     print("Enter UserID : ")
     user_name = input(">> ")
@@ -36,17 +36,26 @@ def login(database) -> tuple[str, str]:  # returns (username, password). None in
             print(f"Welcome {user_name}")
             print()
             print()
-            
-            return user_name, pass_key
+            if "Mentor" in data:
+                mentor_name = data["Mentor"]
+                return user_name, mentor_name, pass_key
+            return user_name, None, pass_key
     
-    return None, None
+    return None, None, None
 
-def sign_up(database): # returns Nothing. as registration does not confirm login
+def sign_up(database, mentor_name=None): # returns Nothing. as registration does not confirm login
+
     print("Enter UserID : ")
-    user_name = input(">> ")
+    while len(user_name := input(">> ")) == 0:
+        print("Please enter a valid username")
+        print()
+        print()
+
     print("Enter Password : ")
-    pass_key = getpass.getpass(">> ")
-    print()
+    while len(pass_key := getpass.getpass(">> ")) < 4:
+        print("Password must be at least 4 characters")
+        print()
+        print()
 
     with open(database, 'rb') as f:
         data = pickle.load(f)       # list
@@ -62,7 +71,10 @@ def sign_up(database): # returns Nothing. as registration does not confirm login
 
     if len(data) == 0:
         print("Registration Successful.")
-        data_reg.append({"Username" : user_name, "Password" : pass_key})
+        if mentor_name:
+            data_reg.append({"Username" : user_name, "Password" : pass_key, "Mentor" : mentor_name})
+        else:
+            data_reg.append({"Username" : user_name, "Password" : pass_key})
         with open(database, 'wb') as f:
             pickle.dump(data_reg, f)
         print()
@@ -73,9 +85,7 @@ def sign_up(database): # returns Nothing. as registration does not confirm login
         print()
         return
     
-def update_passkey(database) -> str: # returns password, as that's what has changed
-    print("Enter UserID : ")
-    user_name = input(">> ")
+def update_passkey(database, user_name) -> str: # returns password, as that's what has changed
     print("Enter Old Password : ")
     pass_key = getpass.getpass(">> ")
     print()

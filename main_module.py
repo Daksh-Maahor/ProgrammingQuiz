@@ -1,11 +1,13 @@
 import teachers_module
 import students_module
+import __init__
 
 IS_TEACHER = 1
 IS_STUDENT = 2
 QUIT = 3
 
 def main():
+    __init__.init()
     running = True
 
     while running:

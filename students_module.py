@@ -5,9 +5,10 @@ import pickle
         
 USER_NAME = None
 PASSWORD = None
+MENTOR_NAME = None
 
 def main():
-    global USER_NAME, PASSWORD
+    global USER_NAME, PASSWORD, MENTOR_NAME
     
     print("----   Programming Quiz   ----")
     print("----   Student's Module   ----")
@@ -33,15 +34,15 @@ def main():
         print()
 
         print("Select An Option")
-        print("1. Login")
-        print("2. Sign Up")
-        print("3. Change Password")
-        print("4. Log Out")
-        print("5. Quit")
-        
-        if signed_in:
-            print("6. Play Quiz")
-            
+
+        if not signed_in:
+            print("1. Login")
+            print("2. Quit")
+        elif signed_in:
+            print("1. Change Password")
+            print("2. Play Quiz")
+            print("3. Log Out")
+            print("4. Quit")
         print()
 
         choice = input(">> ")
@@ -53,26 +54,21 @@ def main():
         
         choice = int(choice)
 
-        if choice == 1:
-            if not signed_in:
-                USER_NAME, PASSWORD = admin.login(STUDENTS_DATABASE)
+        if not signed_in:
+            if choice == 1:
+                USER_NAME, MENTOR_NAME, PASSWORD = admin.login(STUDENTS_DATABASE)
                 signed_in = True
+            elif choice == 2:
+                running = False
             else:
-                print(f"You are already signed in as {USER_NAME}")
-                print("Log Out First")
-        elif choice == 2:
-            admin.sign_up(STUDENTS_DATABASE)
-        elif choice == 3:
-            PASSWORD = admin.update_passkey(STUDENTS_DATABASE)
-        elif choice == 4:
-            # log_out
-            signed_in = False
-            USER_NAME = None
-            PASSWORD = None
-        elif choice == 5:
-            running = False
-        elif choice == 6:
-            if signed_in:
+                print("Invalid Choice")
+                print()
+                continue
+        
+        elif signed_in:
+            if choice == 1:
+                PASSWORD = admin.update_passkey(STUDENTS_DATABASE, USER_NAME)
+            elif choice == 2:
                 #PLAY QUIZ HERE
                 analysis = quiz.play(USER_NAME)
                 try:
@@ -86,42 +82,24 @@ def main():
                     if i["User_name"] == USER_NAME:
                         found = True
                         i["Analysis"].append(analysis)
-                        '''
-                        i["Analysis"]["times"].update(analysis["times"])
-                        i["Analysis"]["accuracy"].update(analysis["accuracy"])
-                        i["Analysis"]["level_report"].update(analysis["level_report"])
-                        i["Analysis"]["type_report"].update(analysis["type_report"])
-                        i["Analysis"]["overall_report"].update(analysis["overall_report"])
-                        '''
-                        '''for j in analysis["correct_que_ids"]:
-                            if j in i["Analysis"]["incorrect_que_ids"]:
-                                i["Analysis"]["incorrect_que_ids"].remove(j)
-                            if not j in i["Analysis"]["correct_que_ids"]:
-                                i["Analysis"]["correct_que_ids"].append(j)
-
-                        for j in analysis["incorrect_que_ids"]:
-                            if j in i["Analysis"]["correct_que_ids"]:
-                                i["Analysis"]["correct_que_ids"].remove(j)
-                            if not j in i["Analysis"]["incorrect_que_ids"]:
-                                i["Analysis"]["incorrect_que_ids"].append(j)'''
                 if not found:
-                    new_data = {"User_name" : USER_NAME, "Analysis" : [analysis]}
+                    new_data = {"User_name" : USER_NAME, "Mentor_name" : MENTOR_NAME,  "Analysis" : [analysis]}
                     data.append(new_data)
 
                 with open("data/user_stats.bin", 'wb') as f:
                     pickle.dump(data, f)
+
+            elif choice == 3:
+                # log_out
+                signed_in = False
+                USER_NAME = None
+                PASSWORD = None
+            
+            elif choice == 4:
+                running = False
+            
             else:
                 print("Invalid Choice")
                 print()
                 continue
-        else:
-            print("Invalid Choice")
-            print()
-            continue
-    
-
-if __name__ == "__main__":
-    main()
-    
-    
     
