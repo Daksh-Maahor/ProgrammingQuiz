@@ -1,13 +1,12 @@
+from init_sql import CURSOR, connect, close
 import teachers_module
 import students_module
-import __init__
 
 IS_TEACHER = 1
 IS_STUDENT = 2
 QUIT = 3
 
 def main():
-    __init__.init()
     running = True
 
     while running:
@@ -22,9 +21,9 @@ def main():
             choice = int(choice)
 
             if choice == IS_TEACHER:
-                teachers_module.main()
+                teachers_module.main(CURSOR, connect)
             elif choice == IS_STUDENT:
-                students_module.main()
+                students_module.main(CURSOR, connect)
             elif choice == QUIT:
                 running = False
             else:
@@ -35,3 +34,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    close()

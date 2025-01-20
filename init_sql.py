@@ -1,11 +1,13 @@
 import mysql.connector as sql
 
 CURSOR = None
+connect = None
 
 STUDENTS_DATABASE = "students_login_data"
 TEACHERS_DATABASE = "teachers_login_data"
 
 def init():
+    global CURSOR, connect
     connect = sql.connect(host="localhost", user="root", passwd="meradav@2007")
     if connect.is_connected() == False:
         print("Error connecting to mysql")
@@ -23,7 +25,7 @@ def init():
     except:
         #tables don't exist
         CURSOR.execute(f"""create table {TEACHERS_DATABASE}(
-                       MENTOR_NAME varchar(20) NOT NULL PRIMARY KEY,
+                       MENTOR_NAME varchar(100) NOT NULL PRIMARY KEY,
                        PASSWD    varchar(20) NOT NULL)""")
         
     try:
@@ -31,9 +33,14 @@ def init():
     except:
         # table doesn't exist
         CURSOR.execute(f"""create table {STUDENTS_DATABASE}(
-                       USER_NAME   varchar(20) NOT NULL PRIMARY KEY,
+                       USER_NAME   varchar(100) NOT NULL PRIMARY KEY,
                        PASSWD      varchar(20) NOT NULL,
-                       MENTOR_NAME varchar(20) NOT NULL REFERENCES teachers_login_data(MENTOR_NAME)
+                       MENTOR_NAME varchar(100) NOT NULL REFERENCES teachers_login_data(MENTOR_NAME)
                        )""")
+        
+    return CURSOR, connect
 
 init()
+
+def close():
+    connect.close()

@@ -1,73 +1,6 @@
 import pickle
 import random
-import time
-
-"""
-
-Programming Quiz Game something
-
-Creator : Daksh Maahor The Great
-
-Reason for Creation : CBSE + khudki curiosity + Charu mam ki advice
-
-App Name : Not yet decided (whoever tells a good name will win $1 million)
-
-Aim of the application : To help fellow students remember python concepts 
-                         in an interactive way or something
-
-Made in : Python 3.12.3 + SQL
-
-"""
-
-"""
-
-Leaving the work here for now
-
-Current Features:
-
-    Quiz
-    Progress tracker (storing in a file)
-    Progress updater
-    Personalised storage of data
-    Auto updation each time the quiz is taken
-    Basic entry based on name system ----> To be updated (priority)
-
-To do list:
-
-    Maybe split the code in multiple files
-    (Although I won't do it coz I'm lazy and also single file me lagta hai ki insaan ne
-     mehnat ki hai)
-
-    Decide a name for program
-    Make a Logo for program
-    Add more questions
-    Add personalized question finder
-    
-    Add a score system   <----- Current priority
-    Also add login and register system    <----- Current priority
-    
-    (For above two use file with user name as file name to store 
-              data about user response like no of corrext ans, and time taken etc : Done)
-    Update : File storage done, personalization remains
-    
-    Add ability to restart without closing : Not seeming possible but will try
-    
-    baaki ka baad me dekh lenge :)
-    har time ki performance dekhni hai -- growth of student
-    time limit bhi rakhni hai
-    time store karke analyse bhi karna hai
-    admin, user, teacher modulefirst page--->login with category
-    - user, admin ya teacher
-    question add karne ka access teacher ko bhi dena hai
-    first page ke baad -subject aur topic 
-    then ask if user wants to review previous performance 
-    admin ke paas user ki id, questions aur saari cheezein edit karne ka access
-    teacher should have students' list
-    teacher ke paas paper editing ka access hona chahiye 
-    student ke paas topicwise evaluation ka access hona chahiye
-    teacher ke paas individual performances honi chahiye har bacche ki 
-
-"""
+import time as time_measure
 
 # IMPORTANT VARIABLES / CONSTANTS
 
@@ -127,13 +60,7 @@ def load_questions():
     QUESTIONS_ALL = []
     with open('data/questions.bin', 'rb') as f:
         QUESTIONS_ALL = pickle.load(f)['questions_list']
-        
-        """print("Questions: \n\n")
-        
-        for j, i in enumerate(QUESTIONS_ALL):
-            print(j)
-            pretty_print(i)
-            print()"""
+    
     QID_LIST = [i['hash'] for i in QUESTIONS_ALL]
     #pretty_print_list(QID_LIST, 'QIDs')
     f.close()
@@ -162,59 +89,8 @@ def load_questions():
     """for que in QUESTIONS_LIST:
         pretty_print(que, 1)
         print()"""
-        
-#print score analysis        
-def display_analysis(quiz_state):
-    'print(quiz_state.analysis)'
-    pretty_print(quiz_state.analysis)
+   
     
-"""'STATE SWITCH FUNCTIONS'
-
-def to_game_state():
-    global CURRENT_STATE, QUIZ_STATE
-    
-    CURRENT_STATE = QUIZ_STATE
-    
-def to_exit_state():
-    global CURRENT_STATE, RESULT_STATE
-    
-    for ques in QUIZ_STATE.questions:
-        QUIZ_STATE.times[ques.hash]=round(ques.time_taken * 100)/100
-    
-    QUIZ_STATE.analysis["times"] = QUIZ_STATE.times
-    QUIZ_STATE.analysis["accuracy"] = QUIZ_STATE.accuracy
-    QUIZ_STATE.analysis["lvl_report"] = QUIZ_STATE.que_level_report
-    QUIZ_STATE.analysis["type_report"] = QUIZ_STATE.que_type_report
-    QUIZ_STATE.analysis["overall_report"] = QUIZ_STATE.overall_report
-    QUIZ_STATE.analysis["right_ids"] = QUIZ_STATE.right_ids
-    QUIZ_STATE.analysis["wrong_ids"] = QUIZ_STATE.wrong_ids
-    
-    CURRENT_STATE = RESULT_STATE
-    
-def quiz_state_next_wrong():
-    global QUIZ_STATE
-    QUIZ_STATE.accuracy[QUIZ_STATE.questions[QUIZ_STATE.current_que_no].hash]=False
-    QUIZ_STATE.que_level_report[QUIZ_STATE.questions[QUIZ_STATE.current_que_no].level]["incorrect"] += 1
-    QUIZ_STATE.que_type_report[QUIZ_STATE.questions[QUIZ_STATE.current_que_no].type]["incorrect"] += 1
-    QUIZ_STATE.overall_report["incorrect"] += 1
-    QUIZ_STATE.wrong_ids.append(QUIZ_STATE.questions[QUIZ_STATE.current_que_no].hash)
-    if QUIZ_STATE.current_que_no < len(QUIZ_STATE.questions) - 1:
-        QUIZ_STATE.current_que_no += 1
-    else:
-        to_exit_state()
-    
-def quiz_state_next_right():
-    global QUIZ_STATE
-    QUIZ_STATE.accuracy[QUIZ_STATE.questions[QUIZ_STATE.current_que_no].hash]=True
-    QUIZ_STATE.que_level_report[QUIZ_STATE.questions[QUIZ_STATE.current_que_no].level]["correct"] += 1
-    QUIZ_STATE.que_type_report[QUIZ_STATE.questions[QUIZ_STATE.current_que_no].type]["correct"] += 1
-    QUIZ_STATE.overall_report["correct"] += 1
-    QUIZ_STATE.right_ids.append(QUIZ_STATE.questions[QUIZ_STATE.current_que_no].hash)
-    if QUIZ_STATE.current_que_no < len(QUIZ_STATE.questions) - 1:
-        QUIZ_STATE.current_que_no += 1
-    else:
-        to_exit_state()"""
-        
 
 'Classes'
 
@@ -263,40 +139,15 @@ class MCQ(Question):
     def __repr__(self) -> str:
         return f'( {self.number}, {self.level}, {self.concepts_used}, {self.question}, {self.options} )'
     
-####
 
-    """
-
-        TODO:
-        
-        Store Quiz accuracy according to various parameters (que difficulty, que type etc)
-    
-    """
-
-####
 class QuizState:
     def __init__(self, stu_name) -> None:
         self.stu_name = stu_name
         
-        
         self.questions = []
         
-        self.times = {}
-        self.accuracy = {}
-        
-        self.analysis = {}
-        self.que_level_report = dict.fromkeys(LEVELS_QUE)
-        self.que_type_report = dict.fromkeys(TYPES_QUE)
+        self.analysis = {"q_wise" : [], "overall" : {}}
         self.overall_report = {"correct" : 0, "incorrect" : 0}
-        
-        self.wrong_ids = []
-        self.right_ids = []
-        
-        for lvl in LEVELS_QUE:
-            self.que_level_report[lvl] = {"correct" : 0, "incorrect" : 0}
-        
-        for qtype in TYPES_QUE:
-            self.que_type_report[qtype] = {"correct" : 0, "incorrect" : 0}
         
         for question in QUESTIONS_LIST:
             que = None
@@ -316,37 +167,24 @@ class QuizState:
         
     def render(self):
         for i in self.questions:
-            t1 = round(time.time_ns() / 1000000000, 2)
+            t1 = round(time_measure.time_ns() / 1000000000, 2)
             correct = i.render()
-            t2 = round(time.time_ns() / 1000000000, 2)
+            t2 = round(time_measure.time_ns() / 1000000000, 2)
 
-            self.times[i.hash] = round(t2 - t1, 2)
-            self.accuracy[i.hash] = correct
+            time = round(t2 - t1, 2)
+            accuracy = correct
+
+            self.analysis["q_wise"].append({"QID" : i.hash, "Question" : i.question, "Time" : time, "Accuracy" : accuracy, "Level" : i.level, "Key Concepts" : i.concepts_used})
             
             if correct:
-                self.right_ids.append(i.hash)
                 self.overall_report["correct"] += 1
-                self.que_level_report[i.level]["correct"] += 1
-                self.que_type_report[i.type]["correct"] += 1
             else:
-                self.wrong_ids.append(i.hash)
                 self.overall_report["incorrect"] += 1
-                self.que_level_report[i.level]["incorrect"] += 1
-                self.que_type_report[i.type]["incorrect"] += 1
         
-        self.analysis["times"] = self.times
-        self.analysis["accuracy"] = self.accuracy
-        self.analysis["level_report"] = self.que_level_report
-        self.analysis["type_report"] = self.que_type_report
-        self.analysis["overall_report"] = self.overall_report
-        self.analysis["correct_que_ids"] = self.right_ids
-        self.analysis["incorrect_que_ids"] = self.wrong_ids
+        self.analysis["overall"] = self.overall_report
         
-        display_analysis(self)
         return self.analysis
                 
-            
-        
 def play(STU_NAME):
     load_questions()
     quiz = QuizState(STU_NAME)

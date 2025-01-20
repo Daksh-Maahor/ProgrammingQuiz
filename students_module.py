@@ -1,5 +1,5 @@
 import common_login_module as admin
-from common_login_module import STUDENTS_DATABASE
+from init_sql import STUDENTS_DATABASE
 import quiz_module as quiz
 import pickle
         
@@ -7,7 +7,7 @@ USER_NAME = None
 PASSWORD = None
 MENTOR_NAME = None
 
-def main():
+def main(CURSOR, connect):
     global USER_NAME, PASSWORD, MENTOR_NAME
     
     print("----   Programming Quiz   ----")
@@ -56,7 +56,7 @@ def main():
 
         if not signed_in:
             if choice == 1:
-                USER_NAME, MENTOR_NAME, PASSWORD = admin.login(STUDENTS_DATABASE)
+                USER_NAME, MENTOR_NAME, PASSWORD = admin.login(STUDENTS_DATABASE, CURSOR)
                 signed_in = True
             elif choice == 2:
                 running = False
@@ -67,7 +67,7 @@ def main():
         
         elif signed_in:
             if choice == 1:
-                PASSWORD = admin.update_passkey(STUDENTS_DATABASE, USER_NAME)
+                PASSWORD = admin.update_passkey(STUDENTS_DATABASE, USER_NAME, CURSOR, connect)
             elif choice == 2:
                 #PLAY QUIZ HERE
                 analysis = quiz.play(USER_NAME)
