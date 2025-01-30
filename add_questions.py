@@ -1,20 +1,23 @@
 import generate_qcodes
 import pickle
+import colorama
+from termcolor import colored
+
+colorama.init()
 
 def add_que():
-    print("==== Add Questions to the Quiz ====")
+    print(colored("==== Add Questions to the Quiz ====", 'light_magenta'))
 
     with open("data/questions.bin", 'rb+') as f:
         data = pickle.load(f)
         questions_list = data['questions_list']
-        #print(questions_list)
         print()
-        print("Select Question Type")
+        print(colored("Select Question Type", 'cyan'))
         print("1. MCQ")
-        print("Enter suitable number : ")
-        typee = input(">> ")
+        print(colored("Enter suitable number : ", 'cyan'))
+        typee = input(colored(">> ", 'green'))
         if not typee.isnumeric():
-            print("Invalid input")
+            print(colored("Invalid Input", 'red'))
             return
 
         typee = int(typee)
@@ -22,19 +25,19 @@ def add_que():
         if typee == 1:
             typee = "MCQ"
         else:
-            print("Invalid Input")
+            print(colored("Invalid Input", 'red'))
             return
         
         print()
         
-        print("Select Question Level")
+        print(colored("Select Question Level", 'cyan'))
         print("1. EASY")
         print("2. MEDIUM")
         print("3. HARD")
-        print("Enter suitable number : ")
-        level = input(">> ")
+        print(colored("Enter suitable number : ", 'cyan'))
+        level = input(colored(">> ", 'green'))
         if not level.isnumeric():
-            print("Invalid input")
+            print(colored("Invalid Input", 'red'))
             return
 
         level = int(level)
@@ -46,7 +49,7 @@ def add_que():
         elif level == 3:
             level = "HARD"
         else:
-            print("Invalid Input")
+            print(colored("Invalid Input", 'red'))
             return
         
         print()
@@ -55,47 +58,47 @@ def add_que():
         
         concepts = []
         
-        print("Select suitable concepts to be applied : (one or more numbers separated by space)")
+        print(colored("Select suitable concepts to be applied : (one or more numbers separated by space)", 'cyan'))
         for i, conc in enumerate(CONCEPTS_LIST):
             print(f"{i+1}. {conc}")
         
-        indices = input(">> ").split(" ")
+        indices = input(colored(">> ", 'green')).split(" ")
         
         for i in indices:
             if i.isnumeric():
                 i = int(i)
                 if i < len(CONCEPTS_LIST) and i >= 0:
-                    concepts.append(CONCEPTS_LIST[i])
+                    concepts.append(CONCEPTS_LIST[i-1])
         
         print()
         
-        print("Enter additional concepts not in previous list : (each concept in a new line, end by typing 'end')")
-        inp = input(">> ")
+        print(colored("Enter additional concepts not in previous list : (each concept in a new line, end by typing 'end')", 'cyan'))
+        inp = input(colored(">> ", 'green'))
         while inp.lower().strip() != 'end':
             inp = inp.title()
             concepts.append(inp)
             CONCEPTS_LIST.append(inp)
             
-            inp = input(">> ")
+            inp = input(colored(">> ", 'green'))
         
         print()
         
-        print("Enter Question :")
-        question = input(">> ")
+        print(colored("Enter Question :", 'cyan'))
+        question = input(colored(">> ", 'green'))
         print()
         
-        print("Enter the Options :")
-        op1 = input(">> ")
-        op2 = input(">> ")
-        op3 = input(">> ")
-        op4 = input(">> ")
+        print(colored("Enter the Options :", 'cyan'))
+        op1 = input(colored(">> ", 'green'))
+        op2 = input(colored(">> ", 'green'))
+        op3 = input(colored(">> ", 'green'))
+        op4 = input(colored(">> ", 'green'))
         
         print()
         
-        print("Enter correct option : (1, 2, 3, 4)")
-        corr_opt = input(">> ")
+        print(colored("Enter correct option : (1, 2, 3, 4)", "cyan"))
+        corr_opt = input(colored(">> ", 'green'))
         if not corr_opt.isnumeric():
-            print("Invalid input")
+            print(colored("Invalid Input", 'red'))
             return
         
         corr_opt = int(corr_opt)
@@ -108,7 +111,7 @@ def add_que():
         elif corr_opt == 4:
             corr_opt = op4
         else:
-            print("Invalid Input")
+            print(colored("Invalid Input", 'red'))
             return
         
         print()
@@ -122,10 +125,10 @@ def add_que():
                                "correct_option" : corr_opt})
         
         data = {"concepts_list" : CONCEPTS_LIST, "questions_list" : questions_list}
-        
+    with open("data/questions.bin", 'wb') as f:
         pickle.dump(data, f)
         
-        generate_qcodes.generate()
+    generate_qcodes.generate()
         
 
 if __name__ == "__main__":

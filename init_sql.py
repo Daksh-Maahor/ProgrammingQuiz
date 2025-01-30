@@ -25,7 +25,7 @@ def init():
     except:
         #tables don't exist
         CURSOR.execute(f"""create table {TEACHERS_DATABASE}(
-                       MENTOR_NAME varchar(100) NOT NULL PRIMARY KEY,
+                       USER_NAME varchar(100) NOT NULL PRIMARY KEY,
                        PASSWD    varchar(100) NOT NULL)""")
         
     try:
@@ -35,7 +35,7 @@ def init():
         CURSOR.execute(f"""create table {STUDENTS_DATABASE}(
                        USER_NAME   varchar(100) NOT NULL PRIMARY KEY,
                        PASSWD      varchar(100) NOT NULL,
-                       MENTOR_NAME varchar(100) NOT NULL REFERENCES teachers_login_data(MENTOR_NAME)
+                       MENTOR_NAME varchar(100) NOT NULL REFERENCES teachers_login_data(USER_NAME)
                        )""")
         
     return CURSOR, connect

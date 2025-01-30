@@ -1,6 +1,13 @@
 import pickle
+import colorama
+from termcolor import colored
 
-CDM_CHOICE_DATA_CLEAR = 1
+colorama.init()
+
+STUDENTS_DATABASE = "students_login_data"
+TEACHERS_DATABASE = "teachers_login_data"
+
+CDM_CHOICE_DATA_CLEAR          = 1
 CDM_CHOICE_SELECTED_DATA_CLEAR = 2
 
 def pretty_print(dictionary, indent=0, index=False):
@@ -33,15 +40,55 @@ def pretty_print_list(lst, title='', indent=0, index=False):
         else:
             print('   '*(indent+1), i)
 
-def main(choiceeee, passwd=None):
+def delete_account(user_name, CURSOR, connect, database):
+    if database == TEACHERS_DATABASE:
+        CURSOR.execute(f'DELETE FROM {database} WHERE USER_NAME = "{user_name}"')
+        connect.commit()
+        CURSOR.execute(f'DELETE FROM {STUDENTS_DATABASE} WHERE MENTOR_NAME = "{user_name}"')
+        connect.commit()
+
+        with open("data/user_stats.bin", "rb") as f:
+            data = pickle.load(f) # list
+        
+            indices = []
+            for i, j in enumerate(data):
+                if j['Mentor_name'] == user_name:
+                    indices.append(i)
+            
+            indices.sort(reverse=True)
+
+            for i in indices:
+                del data[i]
+            
+        with open("data/user_stats.bin", "wb") as f:
+            pickle.dump(data, f) # list
+    else:
+        CURSOR.execute(f'DELETE FROM {database} WHERE USER_NAME = "{user_name}"')
+        connect.commit()
+
+        with open("data/user_stats.bin", "rb") as f:
+            data = pickle.load(f) # list
+        
+            idx = -1
+            for i, j in enumerate(data):
+                if j['User_name'] == user_name:
+                    idx = i
+            if idx >= 0:
+                del data[idx]
+            
+        with open("data/user_stats.bin", "wb") as f:
+            pickle.dump(data, f) # list
+
+    
+def main(choiceeee, CURSOR, connect, passwd=None):
     if choiceeee == CDM_CHOICE_DATA_CLEAR:
-        print("Select : ")
+        print(colored("Select : ", 'cyan'))
         print("1. Admins Data")
         print("2. Students Data")
         print("3. Questions Data")
         print("4. User Statistics")
 
-        choice = input(">> ")
+        choice = input(colored(">> ", 'green'))
 
         passss = None
 
@@ -55,11 +102,13 @@ def main(choiceeee, passwd=None):
                 choice = int(choice)
 
                 if choice == 1:
-                    with open("data/admins.bin", "wb") as f:
-                        pickle.dump([], f)
+                    CURSOR.execute(f'DELETE FROM {TEACHERS_DATABASE}')
+                    connect.commit()
                 
                 elif choice == 2:
-                    with open("data/students.bin", "wb") as f:
+                    CURSOR.execute(f'DELETE FROM {STUDENTS_DATABASE}')
+                    connect.commit()
+                    with open("data/user_stats.bin", "wb") as f:
                         pickle.dump([], f)
 
                 elif choice == 3:
@@ -72,13 +121,13 @@ def main(choiceeee, passwd=None):
         else:
             print("Invalid Password. Terminated")
     elif choiceeee == CDM_CHOICE_SELECTED_DATA_CLEAR:
-        print("Select : ")
+        print(colored("Select : ", 'cyan'))
         print("1. Admins Data")
         print("2. Students Data")
         print("3. Questions Data")
         print("4. User Statistics")
 
-        choice = input(">> ")
+        choice = input(colored(">> ", 'green'))
 
         passss = None
 
@@ -92,15 +141,16 @@ def main(choiceeee, passwd=None):
                 choice = int(choice)
 
                 if choice == 1:
-                    with open("data/admins.bin", "rb") as f:
-                        data = pickle.load(f) # list
+
+                    CURSOR.execute(f'SELECT * FROM {TEACHERS_DATABASE}')
+                    data = CURSOR.fetchall()
 
                     pretty_print_list(data, "Admins List", index=True)
 
                     print()
                     print()
-                    print("Select an index to remove : ")
-                    idx = input(">> ")
+                    print(colored("Select an index to remove : ", "cyan"))
+                    idx = input(colored(">> ", 'green'))
 
                     if not idx.isnumeric():
                         print("Invalid Input")
@@ -108,23 +158,23 @@ def main(choiceeee, passwd=None):
                         idx = int(idx)
 
                         if idx < len(data) and idx >= 0:
-                            del data[idx]
+                            user_name = data[idx][0]
+
+                            CURSOR.execute(f'DELETE FROM {TEACHERS_DATABASE} WHERE USER_NAME="{user_name}"')
+                            connect.commit()
                         else:
                             print("Invalid index")
-                    
-                    with open("data/admins.bin", "wb") as f:
-                        pickle.dump(data, f) # list
                 
                 elif choice == 2:
-                    with open("data/students.bin", "rb") as f:
-                        data = pickle.load(f) # list
+                    CURSOR.execute(f'SELECT * FROM {STUDENTS_DATABASE}')
+                    data = CURSOR.fetchall()
 
                     pretty_print_list(data, "Students List", index=True)
 
                     print()
                     print()
                     print("Select an index to remove : ")
-                    idx = input(">> ")
+                    idx = input(colored(">> ", 'green'))
 
                     if not idx.isnumeric():
                         print("Invalid Input")
@@ -132,16 +182,29 @@ def main(choiceeee, passwd=None):
                         idx = int(idx)
 
                         if idx < len(data) and idx >= 0:
-                            del data[idx]
+                            user_name = data[idx][0]
+
+                            CURSOR.execute(f'DELETE FROM {STUDENTS_DATABASE} WHERE USER_NAME="{user_name}"')
+                            connect.commit()
+
+                            with open("data/user_stats.bin", "rb") as f:
+                                data = pickle.load(f) # list
+                            
+                                idx = 0
+                                for i, j in enumerate(data):
+                                    if j['User_name'] == user_name:
+                                        idx = i
+                                        break
+
+                                del data[idx]
+                                
+                            with open("data/user_stats.bin", "wb") as f:
+                                pickle.dump(data, f) # list
                         else:
                             print("Invalid index")
-                    
-                    with open("data/students.bin", "wb") as f:
-                        pickle.dump(data, f) # list
 
                 elif choice == 3:
                     with open("data/questions.bin", "rb") as f:
-                        #pickle.dump({"concepts_list" : [], "questions_list" : []}, f)
                         data = pickle.load(f)
                         concepts = data["concepts_list"]
                         questions = data["questions_list"]
@@ -150,8 +213,8 @@ def main(choiceeee, passwd=None):
 
                     print()
                     print()
-                    print("Select an index to remove : ")
-                    idx = input(">> ")
+                    print(colored("Select an index to remove : ", 'cyan'))
+                    idx = input(colored(">> ", 'green'))
 
                     if not idx.isnumeric():
                         print("Invalid Input")
@@ -174,8 +237,8 @@ def main(choiceeee, passwd=None):
 
                     print()
                     print()
-                    print("Select an index to remove : ")
-                    idx = input(">> ")
+                    print(colored("Select an index to remove : ", 'cyan'))
+                    idx = input(colored(">> ", 'green'))
 
                     if not idx.isnumeric():
                         print("Invalid Input")

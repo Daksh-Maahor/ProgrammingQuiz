@@ -8,17 +8,6 @@ def generate():
         QUESTIONS_ALL = data['questions_list']
         CONCEPTS = data['concepts_list']
         
-        '''for question in QUESTIONS_LIST:
-            if (len(question["question"]) > NUM_CHAR_BEFORE_SPACE):
-                i = len(question["question"]) // NUM_CHAR_BEFORE_SPACE
-                
-                for j in range(i):
-                    if question["question"][(NUM_CHAR_BEFORE_SPACE*(j+1))-1] != ' ' and question["question"][(NUM_CHAR_BEFORE_SPACE*(j+1))] != ' ':
-                        question["question"] = question["question"][:(NUM_CHAR_BEFORE_SPACE*(j+1))] + '-\n' + question["question"][(NUM_CHAR_BEFORE_SPACE*(j+1)):]
-                    else:
-                        question["question"] = question["question"][:(NUM_CHAR_BEFORE_SPACE*(j+1))] + '\n' + question["question"][(NUM_CHAR_BEFORE_SPACE*(j+1)):]'''
-        'print(QUESTIONS_LIST)'
-        
         for i in QUESTIONS_ALL:
             type = i["type"]
             level = i["level"]

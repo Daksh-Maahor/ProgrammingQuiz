@@ -3,6 +3,10 @@ import clear_data_module
 from clear_data_module import CDM_CHOICE_DATA_CLEAR, CDM_CHOICE_SELECTED_DATA_CLEAR
 from prettytable import PrettyTable
 import init_sql
+import colorama
+from termcolor import colored
+
+colorama.init()
 
 STUDENTS_DATABASE = "students_login_data"
 TEACHERS_DATABASE = "teachers_login_data"
@@ -34,6 +38,20 @@ def pretty_print_list(lst, title='', indent=0):
         else:
             print('   '*(indent+1), i)
 
+def delete_account(user_name, CURSOR, connect, database):
+    clear_data_module.delete_account(user_name, CURSOR, connect, database)
+
+def view_students(user_name, CURSOR):
+    CURSOR.execute(f'SELECT * FROM {STUDENTS_DATABASE} WHERE MENTOR_NAME = "{user_name}"')
+    l = CURSOR.fetchall()
+    data = [i[0] for i in l]
+    print()
+    print()
+    pretty_print_list(data, colored(f"Students of {user_name}", 'green'))
+    print()
+    print()
+    print()
+
 def view_students_performance(user_name):
     with open("data/user_stats.bin", 'rb') as f:
         data = pickle.load(f)
@@ -43,11 +61,12 @@ def view_students_performance(user_name):
                 l.append(i)
         
     print("Select Student")
+    print("(If any of your student's name is not visible, that means he/she has not yet attempted any quiz)")
 
     for i, j in enumerate(l):
         print(f"{i+1}. {j["User_name"]}")
     
-    idx = input(">> ")
+    idx = input(colored(">> ", 'green'))
     if idx.isnumeric():
         idx = int(idx) - 1
         if idx >= len(l) or idx < 0:
@@ -57,35 +76,83 @@ def view_students_performance(user_name):
             data = l[idx]
             analysises = data["Analysis"]
 
+            print("Select Attempt (Enter attempt number) : ")
+
             for i, analysis in enumerate(analysises):
-                print(f"Attempt {i + 1}")
+                print(f"Attempt {i + 1} : {analysis["score"]}%")
 
-                print("Overall Report : ")
-                data = analysis["overall"]
-                print()
+            idx = input(colored(">> ", 'green'))
 
-                overall_data_table = PrettyTable(["Total Questions", "Correct", "Incorrect"])
-                overall_data_table.add_row([data["correct"] + data["incorrect"], data["correct"], data["incorrect"]])
+            if not idx.isnumeric():
+                print("Invalid Input")
+                return
+            
+            idx = int(idx)
 
-                print(overall_data_table)
+            if idx < 1 or idx > len(analysises):
+                print(f"Index Out of range (1-{len(analysises)})")
+                return
+            
+            print(f"Attempt {idx}")
+            idx = idx - 1
+            analysis = analysises[idx]
 
-                print()
-                print()
+            print("Overall Report : ")
+            data = analysis["overall"]
+            print()
 
-                data = analysis["q_wise"]
-                print("Question Wise Report")
-                qwise_data_table = PrettyTable(["QID", "Question", "Time", "Accuracy", "Level", "Key Concepts"])
-                for d in data:
-                    qwise_data_table.add_row([d["QID"], d["Question"], d["Time"], "Correct" if d["Accuracy"] else "Incorrect", d["Level"], d["Key Concepts"]])
-                    qwise_data_table.add_row(["", "", "", "", "", ""])
-                
-                print(qwise_data_table)
+            overall_data_table = PrettyTable(["Total Questions", "Correct", "Incorrect", "Score"])
+            overall_data_table.add_row([data["correct"] + data["incorrect"], data["correct"], data["incorrect"], f'{analysis["score"]}%'])
 
-                print()
-                print()
+            print(overall_data_table)
+
+            print()
+            print()
+
+            data = analysis["q_wise"]
+            print("Question Wise Report")
+            qwise_data_table = PrettyTable(["QID", "Question", "Time", "Accuracy", "Level", "Key Concepts"])
+            for d in data:
+                qwise_data_table.add_row([d["QID"], d["Question"], d["Time"], colored("Correct" if d["Accuracy"] else "Incorrect", 'green' if d["Accuracy"] else 'red'), d["Level"], d["Key Concepts"]])
+                qwise_data_table.add_row(["", "", "", "", "", ""])
+            
+            print(qwise_data_table)
+
+            print()
+            print()
 
     else:
         print("Invalid Input")
+
+def view_quiz():
+    print("Questions Data : ")
+
+    with open('data/questions.bin', 'rb') as f:
+        data = pickle.load(f)
+
+        list_concepts = data["concepts_list"]
+        print()
+        print("Concepts List : ")
+        concepts_table = PrettyTable()
+        concepts_table.add_column("Concepts", list_concepts)
+        print(concepts_table)
+
+        print()
+        print()
+
+        print("Questions List")
+
+        list_qns = data["questions_list"]
+        qns_table = PrettyTable(["Q. No.", "Question", "Options", "Level", "Concepts"])
+        for i, qn in enumerate(list_qns):
+            qns_table.add_row([i+1, qn["question"], qn["options"], qn["level"], qn["concepts"]])
+            qns_table.add_row(["", "", "", "", ""])
+        
+        print(qns_table)
+        print()
+        print()
+
+    print("\n\n\n")
 
 def main(choiceee, CURSOR, connect, passwd=None):
     if choiceee == VM_CHOICE_DATA_VIEW:
@@ -96,7 +163,7 @@ def main(choiceee, CURSOR, connect, passwd=None):
         print("3. Questions Data")
         print("4. User Statistics")
 
-        choice = input(">> ")
+        choice = input(colored(">> ", 'green'))
 
         if not choice.isnumeric():
             print("Invalid choice")
@@ -136,32 +203,7 @@ def main(choiceee, CURSOR, connect, passwd=None):
 
             elif choice == 3:
 
-                print("Questions Data : ")
-
-                with open('data/questions.bin', 'rb') as f:
-                    data = pickle.load(f)
-
-                    list_concepts = data["concepts_list"]
-                    concepts_table = PrettyTable()
-                    concepts_table.add_column("Concepts", list_concepts)
-                    print(concepts_table)
-
-                    print()
-                    print()
-
-                    print("Questions List")
-
-                    list_qns = data["questions_list"]
-                    qns_table = PrettyTable(["Q. No.", "Question", "Options", "Level", "Concepts"])
-                    for i, qn in enumerate(list_qns):
-                        qns_table.add_row([i+1, qn["question"], qn["options"], qn["level"], qn["concepts"]])
-                        qns_table.add_row(["", "", "", "", ""])
-                    
-                    print(qns_table)
-                    print()
-                    print()
-
-                print("\n\n\n")
+                view_quiz()
 
             elif choice == 4:
 
@@ -183,8 +225,8 @@ def main(choiceee, CURSOR, connect, passwd=None):
                             data = analysis["overall"]
                             print()
 
-                            overall_data_table = PrettyTable(["Total Questions", "Correct", "Incorrect"])
-                            overall_data_table.add_row([data["correct"] + data["incorrect"], data["correct"], data["incorrect"]])
+                            overall_data_table = PrettyTable(["Total Questions", "Correct", "Incorrect", "Score"])
+                            overall_data_table.add_row([data["correct"] + data["incorrect"], data["correct"], data["incorrect"], f'{analysis["score"]}%'])
 
                             print(overall_data_table)
 
@@ -195,7 +237,7 @@ def main(choiceee, CURSOR, connect, passwd=None):
                             print("Question Wise Report")
                             qwise_data_table = PrettyTable(["QID", "Question", "Time", "Accuracy", "Level", "Key Concepts"])
                             for d in data:
-                                qwise_data_table.add_row([d["QID"], d["Question"], d["Time"], "Correct" if d["Accuracy"] else "Incorrect", d["Level"], d["Key Concepts"]])
+                                qwise_data_table.add_row([d["QID"], d["Question"], d["Time"], colored("Correct" if d["Accuracy"] else "Incorrect", 'green' if d["Accuracy"] else 'red'), d["Level"], d["Key Concepts"]])
                                 qwise_data_table.add_row(["", "", "", "", "", ""])
                             
                             print(qwise_data_table)
@@ -203,15 +245,12 @@ def main(choiceee, CURSOR, connect, passwd=None):
                             print()
                             print()
 
-                
-                    '''print(type(data))
-                    pretty_print_list(data)'''
             else:
                 print("Invalid choice")
     elif choiceee == VM_CHOICE_DATA_CLEAR:
-        clear_data_module.main(CDM_CHOICE_DATA_CLEAR, passwd)
+        clear_data_module.main(CDM_CHOICE_DATA_CLEAR, CURSOR, connect, passwd)
     elif choiceee == VM_CHOICE_SELECTED_DATA_CLEAR:
-        clear_data_module.main(CDM_CHOICE_SELECTED_DATA_CLEAR, passwd)
+        clear_data_module.main(CDM_CHOICE_SELECTED_DATA_CLEAR, CURSOR, connect, passwd)
 
 def init():
     print("Select : ")
@@ -219,7 +258,7 @@ def init():
     print("2. Clear Whole Data")
     print("3. Clear Specific Entries")
 
-    choiceee = input(">> ")
+    choiceee = input(colored(">> ", 'green'))
 
     if not choiceee.isnumeric():
         print("Invalid Choice")
