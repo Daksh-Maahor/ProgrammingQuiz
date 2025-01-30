@@ -2,7 +2,6 @@ import common_login_module as admin
 from init_sql import TEACHERS_DATABASE, STUDENTS_DATABASE
 import add_questions as que_add
 import view_data
-from view_data import VM_CHOICE_DATA_VIEW, VM_CHOICE_DATA_CLEAR, VM_CHOICE_SELECTED_DATA_CLEAR
 
 USER_NAME = None
 PASSWORD = None
