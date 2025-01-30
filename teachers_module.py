@@ -13,7 +13,7 @@ PASSWORD = None
 def main(CURSOR, connect):
     global USER_NAME, PASSWORD
     print(colored("----   Programming Quiz   ----", 'green'))
-    print(colored("----   Student's Module   ----", 'green'))
+    print(colored("----   Teacher's Module   ----", 'green'))
     print()
     print()
 

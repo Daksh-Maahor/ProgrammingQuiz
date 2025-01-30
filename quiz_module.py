@@ -16,7 +16,7 @@ QUESTIONS_ALL = None # List of all questions
 QID_LIST = None
 
 #Total no of questions to be taken out of the database
-NUM_QUESTIONS_IN_QUIZ = 5
+NUM_QUESTIONS_IN_QUIZ = 10
 
 # QUESTION LEVELS
 LEVEL_EASY = 'EASY'
