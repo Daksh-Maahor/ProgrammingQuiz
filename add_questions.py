@@ -5,10 +5,10 @@ from termcolor import colored
 
 colorama.init()
 
-def add_que():
+def add_que(teacher_id):
     print(colored("==== Add Questions to the Quiz ====", 'light_magenta'))
 
-    with open("data/questions.bin", 'rb+') as f:
+    with open(f"data/{teacher_id}/questions.bin", 'rb+') as f:
         data = pickle.load(f)
         questions_list = data['questions_list']
         print()
@@ -125,13 +125,9 @@ def add_que():
                                "correct_option" : corr_opt})
         
         data = {"concepts_list" : CONCEPTS_LIST, "questions_list" : questions_list}
-    with open("data/questions.bin", 'wb') as f:
+    with open(f"data/{teacher_id}/questions.bin", 'wb') as f:
         pickle.dump(data, f)
         
-    generate_qcodes.generate()
-        
-
-if __name__ == "__main__":
-    add_que()
+    generate_qcodes.generate(teacher_id)
         
         

@@ -1,6 +1,11 @@
 import getpass
 import colorama
 from termcolor import colored
+import os
+import pickle
+
+STUDENTS_DATABASE = "students_login_data"
+TEACHERS_DATABASE = "teachers_login_data"
 
 colorama.init()
 
@@ -13,11 +18,23 @@ def login(database, CURSOR) -> tuple[str, str, str]:  # returns (username, mento
         print(colored("User name cannot be empty", 'red'))
         return None, None, None
 
+    mentor_name = None
+
+    if database == STUDENTS_DATABASE:
+        print(colored("Enter Mentor ID : ", 'cyan'))
+        mentor_name = input(colored(">> ", 'green'))
+        if len(mentor_name) == 0:
+            print(colored("Mentor name cannot be empty", 'red'))
+            return None, None, None
+
     print(colored("Enter Password : ", 'cyan'))
     pass_key = getpass.getpass(colored(">> ", 'green'))
     print()
 
-    CURSOR.execute(f'SELECT * FROM {database} WHERE USER_NAME="{user_name}"')
+    if mentor_name:
+        CURSOR.execute(f'SELECT * FROM {database} WHERE USER_NAME="{user_name}" AND MENTOR_NAME="{mentor_name}"')
+    else:
+        CURSOR.execute(f'SELECT * FROM {database} WHERE USER_NAME="{user_name}"')
 
     if CURSOR.rowcount == 0:
         print(colored(f"UserID {user_name} doesn't exist. Please Sign Up", 'red'))
@@ -57,7 +74,10 @@ def sign_up(database, CURSOR, connect, mentor_name=None): # returns (USERNAME, M
         print()
         return False
 
-    CURSOR.execute(f'SELECT * FROM {database} WHERE USER_NAME="{user_name}"')
+    if mentor_name:
+        CURSOR.execute(f'SELECT * FROM {database} WHERE USER_NAME="{user_name}" AND MENTOR_NAME="{mentor_name}"')
+    else:
+        CURSOR.execute(f'SELECT * FROM {database} WHERE USER_NAME="{user_name}"')
 
     if CURSOR.rowcount == 0:
         print(colored("Registration Successful.", 'green'))
@@ -65,6 +85,11 @@ def sign_up(database, CURSOR, connect, mentor_name=None): # returns (USERNAME, M
             CURSOR.execute(f'INSERT INTO {database}(USER_NAME, PASSWD, MENTOR_NAME) VALUES("{user_name}", "{pass_key}", "{mentor_name}")')
         else:
             CURSOR.execute(f'INSERT INTO {database}(USER_NAME, PASSWD) VALUES("{user_name}", "{pass_key}")')
+            os.mkdir(f'data/{user_name}')
+            with open(f'data/{user_name}/questions.bin', 'wb') as f:
+                pickle.dump({"concepts_list" : [], "questions_list" : []}, f)
+            with open(f'data/{user_name}/user_stats.bin', 'wb') as f:
+                pickle.dump([], f)
         connect.commit()
         print()
         print()
@@ -75,12 +100,15 @@ def sign_up(database, CURSOR, connect, mentor_name=None): # returns (USERNAME, M
         print()
         return False
     
-def update_passkey(database, user_name, CURSOR, connect) -> str: # returns password, as that's what has changed
+def update_passkey(database, user_name, CURSOR, connect, mentor_name=None) -> str: # returns password, as that's what has changed
     print(colored("Enter Old Password : ", 'cyan'))
     pass_key = getpass.getpass(colored(">> ", 'green'))
     print()
 
-    CURSOR.execute(f'SELECT * FROM {database} WHERE USER_NAME="{user_name}"')
+    if not mentor_name:
+        CURSOR.execute(f'SELECT * FROM {database} WHERE USER_NAME="{user_name}"')
+    else:
+        CURSOR.execute(f'SELECT * FROM {database} WHERE USER_NAME="{user_name}" AND MENTOR_NAME="{mentor_name}"')
 
     if CURSOR.rowcount == 0:
         print(colored(f"UserID {user_name} doesn't exist. Please Sign Up", 'red'))
@@ -102,7 +130,10 @@ def update_passkey(database, user_name, CURSOR, connect) -> str: # returns passw
             print()
             print()
 
-            CURSOR.execute(f'UPDATE {database} SET PASSWD = "{pass_key}" WHERE USER_NAME = "{user_name}"')
+            if not mentor_name:
+                CURSOR.execute(f'UPDATE {database} SET PASSWD = "{pass_key}" WHERE USER_NAME = "{user_name}"')
+            else:
+                CURSOR.execute(f'UPDATE {database} SET PASSWD = "{pass_key}" WHERE USER_NAME = "{user_name}" AND MENTOR_NAME = "{mentor_name}"')
             connect.commit()
             
             return pass_key

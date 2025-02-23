@@ -1,8 +1,8 @@
 import pickle
 
-def generate():
+def generate(teacher_id):
     QUESTIONS_ALL = []
-    with open('data/questions.bin', 'rb') as f:
+    with open(f'data/{teacher_id}/questions.bin', 'rb') as f:
         "print('Start')"
         data = pickle.load(f)
         QUESTIONS_ALL = data['questions_list']
@@ -46,10 +46,7 @@ def generate():
         
     obj = {'concepts_list': CONCEPTS, 'questions_list' : QUESTIONS_ALL}
 
-    with open('data/questions.bin', 'wb') as f:
+    with open(f'data/{teacher_id}/questions.bin', 'wb') as f:
         pickle.dump(obj, f)
         
     f.close()
-    
-if __name__ == "__main__":
-    generate()

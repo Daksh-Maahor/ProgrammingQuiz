@@ -15,7 +15,7 @@ MENTOR_NAME = None
 def main(CURSOR, connect):
     global USER_NAME, PASSWORD, MENTOR_NAME
     
-    print(colored("----   Programming Quiz   ----", 'green'))
+    print(colored("----        Quiz          ----", 'green'))
     print(colored("----   Student's Module   ----", 'green'))
     print()
     print()
@@ -32,7 +32,7 @@ def main(CURSOR, connect):
             print(colored("Currently Signed Out", 'light_magenta'))
             signed_in = False
         else:
-            print(colored(f"Currently Signed In as {USER_NAME}", 'light_magenta'))
+            print(colored(f"Currently Signed In as {USER_NAME}, student of {MENTOR_NAME}", 'light_magenta'))
             signed_in = True
             
         print()
@@ -76,9 +76,9 @@ def main(CURSOR, connect):
                 PASSWORD = admin.update_passkey(STUDENTS_DATABASE, USER_NAME, CURSOR, connect)
             elif choice == 2:
                 #PLAY QUIZ HERE
-                analysis = quiz.play(USER_NAME)
+                analysis = quiz.play(USER_NAME, MENTOR_NAME)
                 try:
-                    with open("data/user_stats.bin", 'rb') as f:
+                    with open(f"data/{MENTOR_NAME}/user_stats.bin", 'rb') as f:
                         data = pickle.load(f)
                 except:
                     data = []
@@ -90,7 +90,7 @@ def main(CURSOR, connect):
                 if not found:
                     new_data = {"User_name" : USER_NAME, "Mentor_name" : MENTOR_NAME,  "Analysis" : [analysis]}
                     data.append(new_data)
-                with open("data/user_stats.bin", 'wb') as f:
+                with open(f"data/{MENTOR_NAME}/user_stats.bin", 'wb') as f:
                     pickle.dump(data, f)
 
             elif choice == 3:

@@ -1,6 +1,5 @@
 import pickle
 import clear_data_module
-from clear_data_module import CDM_CHOICE_DATA_CLEAR, CDM_CHOICE_SELECTED_DATA_CLEAR
 from prettytable import PrettyTable
 import init_sql
 import colorama
@@ -53,33 +52,29 @@ def view_students(user_name, CURSOR):
     print()
 
 def view_students_performance(user_name):
-    with open("data/user_stats.bin", 'rb') as f:
-        data = pickle.load(f)
-        l = []
-        for i in data:
-            if i["Mentor_name"] == user_name:
-                l.append(i)
+    with open(f"data/{user_name}/user_stats.bin", 'rb') as f:
+        datas = pickle.load(f)
         
     print("Select Student")
     print("(If any of your student's name is not visible, that means he/she has not yet attempted any quiz)")
 
-    for i, j in enumerate(l):
+    for i, j in enumerate(datas):
         print(f"{i+1}. {j["User_name"]}")
     
     idx = input(colored(">> ", 'green'))
     if idx.isnumeric():
         idx = int(idx) - 1
-        if idx >= len(l) or idx < 0:
-            print(f"Index out of range (1-{len(l)})")
+        if idx >= len(datas) or idx < 0:
+            print(f"Index out of range (1-{len(datas)})")
         else:
 
-            data = l[idx]
+            data = datas[idx]
             analysises = data["Analysis"]
 
             print("Select Attempt (Enter attempt number) : ")
 
             for i, analysis in enumerate(analysises):
-                print(f"Attempt {i + 1} : {analysis["score"]}%")
+                print(f"Attempt {i + 1} : {analysis["score"]}% ({analysis["overall"]["correct"]}/{analysis["overall"]["correct"]+analysis["overall"]["incorrect"]})")
 
             idx = input(colored(">> ", 'green'))
 
@@ -124,10 +119,10 @@ def view_students_performance(user_name):
     else:
         print("Invalid Input")
 
-def view_quiz():
+def view_quiz(teacher_id):
     print("Questions Data : ")
 
-    with open('data/questions.bin', 'rb') as f:
+    with open(f'data/{teacher_id}/questions.bin', 'rb') as f:
         data = pickle.load(f)
 
         list_concepts = data["concepts_list"]
@@ -247,10 +242,6 @@ def main(choiceee, CURSOR, connect, passwd=None):
 
             else:
                 print("Invalid choice")
-    elif choiceee == VM_CHOICE_DATA_CLEAR:
-        clear_data_module.main(CDM_CHOICE_DATA_CLEAR, CURSOR, connect, passwd)
-    elif choiceee == VM_CHOICE_SELECTED_DATA_CLEAR:
-        clear_data_module.main(CDM_CHOICE_SELECTED_DATA_CLEAR, CURSOR, connect, passwd)
 
 def init():
     print("Select : ")

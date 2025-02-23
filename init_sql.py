@@ -33,9 +33,10 @@ def init():
     except:
         # table doesn't exist
         CURSOR.execute(f"""create table {STUDENTS_DATABASE}(
-                       USER_NAME   varchar(100) NOT NULL PRIMARY KEY,
+                       USER_NAME   varchar(100) NOT NULL,
                        PASSWD      varchar(100) NOT NULL,
-                       MENTOR_NAME varchar(100) NOT NULL REFERENCES teachers_login_data(USER_NAME)
+                       MENTOR_NAME varchar(100) NOT NULL REFERENCES teachers_login_data(USER_NAME),
+                       PRIMARY KEY(USER_NAME, MENTOR_NAME)
                        )""")
         
     return CURSOR, connect
@@ -44,3 +45,6 @@ init()
 
 def close():
     connect.close()
+
+if __name__ == "__main__":
+    close()

@@ -12,7 +12,7 @@ PASSWORD = None
 
 def main(CURSOR, connect):
     global USER_NAME, PASSWORD
-    print(colored("----   Programming Quiz   ----", 'green'))
+    print(colored("----       Quiz           ----", 'green'))
     print(colored("----   Teacher's Module   ----", 'green'))
     print()
     print()
@@ -85,14 +85,14 @@ def main(CURSOR, connect):
             elif choice == 2:
                 admin.sign_up(STUDENTS_DATABASE, CURSOR, connect, USER_NAME)
             elif choice == 3:
-                que_add.add_que()
+                que_add.add_que(USER_NAME)
             elif choice == 4:
                 view_data.view_students(USER_NAME, CURSOR)
             elif choice == 5:
                 view_data.view_students_performance(USER_NAME)
 
             elif choice == 6:
-                view_data.view_quiz()
+                view_data.view_quiz(USER_NAME)
             elif choice == 7:
                 signed_in = False
                 USER_NAME = None

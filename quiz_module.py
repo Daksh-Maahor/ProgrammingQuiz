@@ -30,10 +30,10 @@ TYPES_QUE = [TYPE_MCQ]
 
             
 # to load questions
-def load_questions():
+def load_questions(mentor_name):
     global QUESTIONS_LIST, QUESTIONS_ALL, QID_LIST
     QUESTIONS_ALL = []
-    with open('data/questions.bin', 'rb') as f:
+    with open(f'data/{mentor_name}/questions.bin', 'rb') as f:
         QUESTIONS_ALL = pickle.load(f)['questions_list']
     
     QID_LIST = [i['hash'] for i in QUESTIONS_ALL]
@@ -150,8 +150,8 @@ class QuizState:
         
         return self.analysis
                 
-def play(STU_NAME):
-    load_questions()
+def play(STU_NAME, MEN_NAME):
+    load_questions(MEN_NAME)
     quiz = QuizState(STU_NAME)
     return quiz.render()
 
