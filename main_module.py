@@ -1,4 +1,4 @@
-from init_sql import CURSOR, connect, close
+from init_sql import get_db_connection, close_db_connection
 import teachers_module
 import students_module
 import colorama
@@ -12,6 +12,7 @@ QUIT = 3
 
 def main():
     running = True
+    connection, cursor = get_db_connection()
 
     while running:
         print(colored("     Programming Quiz    ", 'green'))
@@ -27,9 +28,9 @@ def main():
             choice = int(choice)
 
             if choice == IS_TEACHER:
-                teachers_module.main(CURSOR, connect)
+                teachers_module.main(cursor, connection)
             elif choice == IS_STUDENT:
-                students_module.main(CURSOR, connect)
+                students_module.main(cursor, connection)
             elif choice == QUIT:
                 running = False
             else:
@@ -40,4 +41,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    close()
+    close_db_connection()

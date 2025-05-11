@@ -1,5 +1,5 @@
 import common_login_module as admin
-from init_sql import TEACHERS_DATABASE, STUDENTS_DATABASE
+from init_sql import DatabaseConfig
 import add_questions as que_add
 import view_data
 import colorama
@@ -10,7 +10,7 @@ colorama.init()
 USER_NAME = None
 PASSWORD = None
 
-def main(CURSOR, connect):
+def main(cursor, connection):
     global USER_NAME, PASSWORD
     print(colored("----       Quiz           ----", 'green'))
     print(colored("----   Teacher's Module   ----", 'green'))
@@ -65,10 +65,10 @@ def main(CURSOR, connect):
 
         if not signed_in:
             if choice == 1: # sign in
-                USER_NAME, _, PASSWORD = admin.login(TEACHERS_DATABASE, CURSOR)
+                USER_NAME, _, PASSWORD = admin.login(DatabaseConfig.TEACHERS_TABLE, cursor)
                 signed_in = True
             elif choice == 2: # sign up
-                success = admin.sign_up(TEACHERS_DATABASE, CURSOR, connect)
+                success = admin.sign_up(DatabaseConfig.TEACHERS_TABLE, cursor, connection)
                 if not success == False:
                     USER_NAME, _, PASSWORD = success
                     signed_in = True
@@ -81,16 +81,15 @@ def main(CURSOR, connect):
         
         elif signed_in:
             if choice == 1:
-                PASSWORD = admin.update_passkey(TEACHERS_DATABASE, USER_NAME, CURSOR, connect)
+                PASSWORD = admin.update_passkey(DatabaseConfig.TEACHERS_TABLE, USER_NAME, cursor, connection)
             elif choice == 2:
-                admin.sign_up(STUDENTS_DATABASE, CURSOR, connect, USER_NAME)
+                admin.sign_up(DatabaseConfig.STUDENTS_TABLE, cursor, connection, USER_NAME)
             elif choice == 3:
                 que_add.add_que(USER_NAME)
             elif choice == 4:
-                view_data.view_students(USER_NAME, CURSOR)
+                view_data.view_students(USER_NAME, cursor)
             elif choice == 5:
                 view_data.view_students_performance(USER_NAME)
-
             elif choice == 6:
                 view_data.view_quiz(USER_NAME)
             elif choice == 7:
@@ -98,7 +97,7 @@ def main(CURSOR, connect):
                 USER_NAME = None
                 PASSWORD = None
             elif choice == 8:
-                view_data.delete_account(USER_NAME, CURSOR, connect, TEACHERS_DATABASE)
+                view_data.delete_account(USER_NAME, cursor, connection, DatabaseConfig.TEACHERS_TABLE)
                 USER_NAME = None
                 PASSWORD = None
                 signed_in = False

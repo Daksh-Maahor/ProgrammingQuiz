@@ -1,5 +1,5 @@
 import common_login_module as admin
-from init_sql import STUDENTS_DATABASE
+from init_sql import DatabaseConfig
 import quiz_module as quiz
 import view_data
 import pickle
@@ -12,7 +12,7 @@ USER_NAME = None
 PASSWORD = None
 MENTOR_NAME = None
 
-def main(CURSOR, connect):
+def main(cursor, connection):
     global USER_NAME, PASSWORD, MENTOR_NAME
     
     print(colored("----        Quiz          ----", 'green'))
@@ -62,7 +62,7 @@ def main(CURSOR, connect):
 
         if not signed_in:
             if choice == 1:
-                USER_NAME, MENTOR_NAME, PASSWORD = admin.login(STUDENTS_DATABASE, CURSOR)
+                USER_NAME, MENTOR_NAME, PASSWORD = admin.login(DatabaseConfig.STUDENTS_TABLE, cursor)
                 signed_in = True
             elif choice == 2:
                 running = False
@@ -73,7 +73,7 @@ def main(CURSOR, connect):
         
         elif signed_in:
             if choice == 1:
-                PASSWORD = admin.update_passkey(STUDENTS_DATABASE, USER_NAME, CURSOR, connect)
+                PASSWORD = admin.update_passkey(DatabaseConfig.STUDENTS_TABLE, USER_NAME, cursor, connection)
             elif choice == 2:
                 #PLAY QUIZ HERE
                 analysis = quiz.play(USER_NAME, MENTOR_NAME)
@@ -100,7 +100,7 @@ def main(CURSOR, connect):
                 PASSWORD = None
             
             elif choice == 4:
-                view_data.delete_account(USER_NAME, CURSOR, connect, STUDENTS_DATABASE)
+                view_data.delete_account(USER_NAME, cursor, connection, DatabaseConfig.STUDENTS_TABLE)
                 USER_NAME = None
                 PASSWORD = None
                 signed_in = False
