@@ -8,7 +8,7 @@ TEACHERS_DATABASE = "teachers_login_data"
 
 def init():
     global CURSOR, connect
-    connect = sql.connect(host="localhost", user="root", passwd="meradav@2007")
+    connect = sql.connect(host="localhost", user="Daksh-Maahor", passwd="daksh_maahor@2007dav")
     if connect.is_connected() == False:
         print("Error connecting to mysql")
     CURSOR = connect.cursor(buffered=True)

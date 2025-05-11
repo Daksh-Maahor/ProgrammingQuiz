@@ -14,6 +14,8 @@ def main():
     running = True
 
     while running:
+        print(colored("     Programming Quiz    ", 'green'))
+
         print(colored("Select an Option (1 or 2)", 'cyan'))
         print("1. Teacher")
         print("2. Student")
