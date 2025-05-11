@@ -2,7 +2,6 @@ import common_login_module as admin
 from init_sql import DatabaseConfig
 import quiz_module as quiz
 import view_data
-import pickle
 import colorama
 from termcolor import colored
 
@@ -75,24 +74,8 @@ def main(cursor, connection):
             if choice == 1:
                 PASSWORD = admin.update_passkey(DatabaseConfig.STUDENTS_TABLE, USER_NAME, cursor, connection)
             elif choice == 2:
-                #PLAY QUIZ HERE
-                analysis = quiz.play(USER_NAME, MENTOR_NAME)
-                try:
-                    with open(f"data/{MENTOR_NAME}/user_stats.bin", 'rb') as f:
-                        data = pickle.load(f)
-                except:
-                    data = []
-                found = False
-                for i in data:
-                    if i["User_name"] == USER_NAME:
-                        found = True
-                        i["Analysis"].append(analysis)
-                if not found:
-                    new_data = {"User_name" : USER_NAME, "Mentor_name" : MENTOR_NAME,  "Analysis" : [analysis]}
-                    data.append(new_data)
-                with open(f"data/{MENTOR_NAME}/user_stats.bin", 'wb') as f:
-                    pickle.dump(data, f)
-
+                # Play quiz and store attempts in database
+                quiz.play(USER_NAME, MENTOR_NAME)
             elif choice == 3:
                 # log_out
                 signed_in = False

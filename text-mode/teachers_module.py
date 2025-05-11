@@ -48,9 +48,10 @@ def main(cursor, connection):
             print("4. View My Students")
             print("5. View Student Performance")
             print("6. View Quiz")
-            print("7. Log Out")
-            print("8. Delete Account")
-            print("9. Quit")
+            print("7. Manage My Questions")
+            print("8. Log Out")
+            print("9. Delete Account")
+            print("10. Quit")
         
         print()
 
@@ -93,15 +94,17 @@ def main(cursor, connection):
             elif choice == 6:
                 view_data.view_quiz(USER_NAME)
             elif choice == 7:
+                view_data.manage_questions(USER_NAME)
+            elif choice == 8:
                 signed_in = False
                 USER_NAME = None
                 PASSWORD = None
-            elif choice == 8:
+            elif choice == 9:
                 view_data.delete_account(USER_NAME, cursor, connection, DatabaseConfig.TEACHERS_TABLE)
                 USER_NAME = None
                 PASSWORD = None
                 signed_in = False
-            elif choice == 9:
+            elif choice == 10:
                 running = False
             else:
                 print(colored("Invalid Choice", 'red'))

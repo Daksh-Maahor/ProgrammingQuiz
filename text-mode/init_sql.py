@@ -15,6 +15,8 @@ class DatabaseConfig:
     DATABASE = 'programming_quiz'
     STUDENTS_TABLE = "students_login_data"
     TEACHERS_TABLE = "teachers_login_data"
+    QUESTIONS_TABLE = "questions"
+    QUIZ_ATTEMPTS_TABLE = "quiz_attempts"
 
 class DatabaseConnection:
     """Database connection manager"""
@@ -74,6 +76,39 @@ class DatabaseConnection:
                     CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     PRIMARY KEY(USER_NAME, MENTOR_NAME),
                     FOREIGN KEY(MENTOR_NAME) REFERENCES {DatabaseConfig.TEACHERS_TABLE}(USER_NAME)
+                        ON DELETE CASCADE
+                )
+            """)
+
+            # Create questions table
+            self._cursor.execute(f"""
+                CREATE TABLE IF NOT EXISTS {DatabaseConfig.QUESTIONS_TABLE} (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    teacher_id VARCHAR(100) NOT NULL,
+                    question_text TEXT NOT NULL,
+                    options JSON NOT NULL,
+                    correct_answer VARCHAR(100) NOT NULL,
+                    difficulty ENUM('EASY', 'MEDIUM', 'HARD') NOT NULL,
+                    concepts JSON NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (teacher_id) REFERENCES {DatabaseConfig.TEACHERS_TABLE}(USER_NAME)
+                        ON DELETE CASCADE
+                )
+            """)
+
+            # Create quiz_attempts table
+            self._cursor.execute(f"""
+                CREATE TABLE IF NOT EXISTS {DatabaseConfig.QUIZ_ATTEMPTS_TABLE} (
+                    attempt_id INT AUTO_INCREMENT PRIMARY KEY,
+                    quiz_session_id INT NOT NULL,
+                    student_name VARCHAR(100) NOT NULL,
+                    question_id INT NOT NULL,
+                    selected_answer VARCHAR(100) NOT NULL,
+                    time_taken FLOAT NOT NULL,
+                    attempt_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (student_name) REFERENCES {DatabaseConfig.STUDENTS_TABLE}(USER_NAME)
+                        ON DELETE CASCADE,
+                    FOREIGN KEY (question_id) REFERENCES {DatabaseConfig.QUESTIONS_TABLE}(id)
                         ON DELETE CASCADE
                 )
             """)

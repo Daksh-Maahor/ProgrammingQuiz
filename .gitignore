@@ -1,32 +1,46 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# Virtual environment
+# Virtual Environment
+venv/
 env/
 ENV/
-.venv/
-venv/
-
-# Environment variables
 .env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+data/*.bin
+data/*/questions.bin
+data/*/user_stats.bin
 
 # Database files (if any, e.g. SQLite)
 *.sqlite3
 *.db
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Python egg files
-*.egg-info/
-dist/
-build/
-
-# Pytest cache
-.pytest_cache/
-
-# VSCode settings (optional)
-.vscode/
