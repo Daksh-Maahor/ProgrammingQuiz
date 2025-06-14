@@ -36,7 +36,7 @@ A command-line based quiz management system for programming education, built wit
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Daksh-Maahor/ProgrammingQuiz.git
    cd ProgrammingQuiz
    ```
 
