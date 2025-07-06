@@ -95,54 +95,7 @@ A command-line based quiz management system for programming education, built wit
 
 ## Future Expansion: GUI Mode
 
-### Planned Features
-
-The project is planned to include a GUI-based version alongside the current text-mode implementation. The GUI mode will provide the same functionality as the text mode but with a modern, user-friendly graphical interface.
-
-#### GUI Mode Structure
-- `gui-mode/` - New folder to contain all GUI-related code
-  - `main_gui.py` - Main GUI application entry point
-  - `login_window.py` - Authentication interface
-  - `teacher_dashboard.py` - Teacher's main interface
-  - `student_dashboard.py` - Student's main interface
-  - `quiz_creator.py` - Quiz creation interface
-  - `quiz_taker.py` - Quiz taking interface
-  - `results_viewer.py` - Results and statistics display
-  - `question_manager.py` - Question bank management
-  - `assets/` - Images, icons, and other resources
-  - `styles/` - CSS/styling files for the interface
-
-#### Key GUI Features
-- **Modern User Interface**
-  - Clean, intuitive design with proper navigation
-  - Responsive layout that adapts to different screen sizes
-  - Professional color scheme and typography
-
-- **Enhanced User Experience**
-  - Drag-and-drop question reordering
-  - Real-time quiz preview
-  - Interactive progress indicators
-  - Visual feedback for correct/incorrect answers
-
-- **Advanced Functionality**
-  - Rich text editor for questions and explanations
-  - Image support for questions
-  - Export results to PDF/Excel
-  - Bulk question import/export
-  - Advanced analytics and charts
-
-- **Technical Implementation**
-  - Built with Tkinter or PyQt for cross-platform compatibility
-  - Modular architecture for easy maintenance
-  - Database integration with the existing MySQL setup
-  - Consistent API with the text-mode backend
-
-#### Development Roadmap
-1. **Phase 1**: Basic GUI framework and login system
-2. **Phase 2**: Teacher dashboard and quiz creation tools
-3. **Phase 3**: Student interface and quiz taking functionality
-4. **Phase 4**: Advanced features and polish
-5. **Phase 5**: Testing, optimization, and documentation
+The project has potential for expansion to include a GUI-based version alongside the current text-mode implementation. A `gui-mode/` folder could be added to the project structure to house a graphical user interface that provides the same functionality as the text mode but with a modern, user-friendly interface.
 
 ## Contributing
 
