@@ -70,14 +70,6 @@ def login(database: str, CURSOR) -> Tuple[Optional[str], Optional[str], Optional
             print(colored("Invalid mentor name format.", 'red'))
             return None, None, None
 
-    print(colored("Enter Password : ", 'cyan'))
-    pass_key = getpass.getpass(colored(">> ", 'green'))
-    print()
-
-    if not pass_key:
-        print(colored("Password cannot be empty", 'red'))
-        return None, None, None
-
     try:
         if mentor_name:
             CURSOR.execute(f'SELECT * FROM {database} WHERE USER_NAME = %s AND MENTOR_NAME = %s', (user_name, mentor_name))
@@ -85,10 +77,21 @@ def login(database: str, CURSOR) -> Tuple[Optional[str], Optional[str], Optional
             CURSOR.execute(f'SELECT * FROM {database} WHERE USER_NAME = %s', (user_name,))
 
         if CURSOR.rowcount == 0:
-            print(colored(f"UserID {user_name} doesn't exist. Please Sign Up", 'red'))
+            if database == STUDENTS_DATABASE:
+                print(colored(f"UserID {user_name} with Mentor {mentor_name} doesn't exist. Please Sign Up", 'red'))
+            else:
+                print(colored(f"UserID {user_name} doesn't exist. Please Sign Up", 'red'))
             print()
             print()
         else:
+            print(colored("Enter Password : ", 'cyan'))
+            pass_key = getpass.getpass(colored(">> ", 'green'))
+            print()
+
+            if not pass_key:
+                print(colored("Password cannot be empty", 'red'))
+                return None, None, None
+
             data = CURSOR.fetchone()
             if pass_key != data[1]:
                 print(colored("Invalid Password", 'red'))

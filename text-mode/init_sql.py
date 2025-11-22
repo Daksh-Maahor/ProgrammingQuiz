@@ -83,14 +83,14 @@ class DatabaseConnection:
             # Create questions table
             self._cursor.execute(f"""
                 CREATE TABLE IF NOT EXISTS {DatabaseConfig.QUESTIONS_TABLE} (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    teacher_id VARCHAR(100) NOT NULL,
-                    question_text TEXT NOT NULL,
-                    options JSON NOT NULL,
-                    correct_answer VARCHAR(100) NOT NULL,
-                    difficulty ENUM('EASY', 'MEDIUM', 'HARD') NOT NULL,
-                    concepts JSON NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    ID INT AUTO_INCREMENT PRIMARY KEY,
+                    MENTOR_ID VARCHAR(100) NOT NULL,
+                    QUESTION_TEXT TEXT NOT NULL,
+                    OPTIONS JSON NOT NULL,
+                    CORRECT_ANSWER VARCHAR(100) NOT NULL,
+                    DIFFICULTY ENUM('EASY', 'MEDIUM', 'HARD') NOT NULL,
+                    CONCEPTS JSON NOT NULL,
+                    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (teacher_id) REFERENCES {DatabaseConfig.TEACHERS_TABLE}(USER_NAME)
                         ON DELETE CASCADE
                 )
@@ -99,16 +99,17 @@ class DatabaseConnection:
             # Create quiz_attempts table
             self._cursor.execute(f"""
                 CREATE TABLE IF NOT EXISTS {DatabaseConfig.QUIZ_ATTEMPTS_TABLE} (
-                    attempt_id INT AUTO_INCREMENT PRIMARY KEY,
-                    quiz_session_id INT NOT NULL,
-                    student_name VARCHAR(100) NOT NULL,
-                    question_id INT NOT NULL,
-                    selected_answer VARCHAR(100) NOT NULL,
-                    time_taken FLOAT NOT NULL,
-                    attempt_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (student_name) REFERENCES {DatabaseConfig.STUDENTS_TABLE}(USER_NAME)
+                    ATTEMPT_ID INT AUTO_INCREMENT PRIMARY KEY,
+                    QUIZ_SESSION_ID INT NOT NULL,
+                    STUDENT_NAME VARCHAR(100) NOT NULL,
+                    MENTOR_NAME VARCHAR(100) NOT NULL,
+                    QUESTION_ID INT NOT NULL,
+                    SELECTED_ANSWER VARCHAR(100) NOT NULL,
+                    TIME_TAKEN FLOAT NOT NULL,
+                    ATTEMPT_DATE TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (STUDENT_NAME, MENTOR_NAME) REFERENCES {DatabaseConfig.STUDENTS_TABLE}(USER_NAME, MENTOR_NAME)
                         ON DELETE CASCADE,
-                    FOREIGN KEY (question_id) REFERENCES {DatabaseConfig.QUESTIONS_TABLE}(id)
+                    FOREIGN KEY (QUESTION_ID) REFERENCES {DatabaseConfig.QUESTIONS_TABLE}(id)
                         ON DELETE CASCADE
                 )
             """)
