@@ -1,8 +1,8 @@
-import generate_qcodes
 import json
 import colorama
 from termcolor import colored
-from init_sql import DatabaseConfig, get_db_connection
+from config import QuestionsTableConfig
+from init_sql import get_db_connection
 
 colorama.init()
 
@@ -12,9 +12,15 @@ def add_que(teacher_id):
     connection, cursor = get_db_connection()
 
     # Fetch existing concepts from the database
-    cursor.execute(f"SELECT DISTINCT concepts FROM {DatabaseConfig.QUESTIONS_TABLE} WHERE teacher_id = %s", (teacher_id,))
-    existing_concepts = [row[0] for row in cursor.fetchall() if row[0]]
-    CONCEPTS_LIST = list(set(existing_concepts))
+    cursor.execute(f"SELECT concepts FROM {QuestionsTableConfig.QUESTIONS_TABLE}")
+    existing_concepts = []
+    for row in cursor.fetchall():
+        if row[0]:
+            concept_list = row[0]
+            for concept in json.loads(concept_list):
+                if concept not in existing_concepts:
+                    existing_concepts.append(concept)
+    CONCEPTS_LIST = list(set([concepts for concepts in existing_concepts]))
 
     print()
     print(colored("Select Question Type", 'cyan'))
@@ -62,6 +68,9 @@ def add_que(teacher_id):
     concepts = []
     
     print(colored("Select suitable concepts to be applied : (one or more numbers separated by space)", 'cyan'))
+    print("If the concept you want is not listed, you can add it in the next step.")
+    print("Just type 'end' to finish selecting from the list.")
+    print("Available Concepts : ")
     for i, conc in enumerate(CONCEPTS_LIST):
         print(f"{i+1}. {conc}")
     
@@ -70,7 +79,7 @@ def add_que(teacher_id):
     for i in indices:
         if i.isnumeric():
             i = int(i)
-            if i < len(CONCEPTS_LIST) and i >= 0:
+            if i <= len(CONCEPTS_LIST) and i > 0:
                 concepts.append(CONCEPTS_LIST[i-1])
     
     print()
@@ -80,7 +89,6 @@ def add_que(teacher_id):
     while inp.lower().strip() != 'end':
         inp = inp.title()
         concepts.append(inp)
-        CONCEPTS_LIST.append(inp)
         
         inp = input(colored(">> ", 'green'))
     
@@ -98,7 +106,7 @@ def add_que(teacher_id):
     
     print()
     
-    print(colored("Enter correct option : (1, 2, 3, 4)", "cyan"))
+    print(colored("Enter correct option number : (1, 2, 3, 4)", "cyan"))
     corr_opt = input(colored(">> ", 'green'))
     if not corr_opt.isnumeric():
         print(colored("Invalid Input", 'red'))
@@ -121,18 +129,13 @@ def add_que(teacher_id):
     
     # Insert the question into the database
     options = json.dumps([op1, op2, op3, op4])
-    # Remove difficulty level from concepts if it exists
-    if level in concepts:
-        concepts.remove(level)
     cursor.execute(
-        f"INSERT INTO {DatabaseConfig.QUESTIONS_TABLE} (teacher_id, question_text, options, correct_answer, difficulty, concepts) VALUES (%s, %s, %s, %s, %s, %s)",
+        f"INSERT INTO {QuestionsTableConfig.QUESTIONS_TABLE} ({QuestionsTableConfig.MENTOR_ID}, {QuestionsTableConfig.QUESTION_TEXT}, {QuestionsTableConfig.OPTIONS}, {QuestionsTableConfig.CORRECT_ANSWER}, {QuestionsTableConfig.DIFFICULTY}, {QuestionsTableConfig.CONCEPTS}) VALUES (%s, %s, %s, %s, %s, %s)",
         (teacher_id, question, options, corr_opt, level, json.dumps(concepts))
     )
     connection.commit()
     
     print(colored("Question added successfully!", 'green'))
     
-    # Generate question codes if needed
-    generate_qcodes.generate(teacher_id)
         
         

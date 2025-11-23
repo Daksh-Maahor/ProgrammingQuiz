@@ -2,13 +2,13 @@ import random
 import time as time_measure
 import colorama
 from termcolor import colored
-from init_sql import DatabaseConfig, get_db_connection
+from init_sql import get_db_connection
+from config import QuestionsTableConfig, QuizAttemptsTableConfig
 import json
 
 colorama.init()
 
-# Player name
-NAME = ''
+#TODO: implement quiz attempts saving and loading
 
 QUESTIONS_LIST = None # to be used in program
 
@@ -31,11 +31,10 @@ TYPES_QUE = [TYPE_MCQ]
 
             
 # to load questions
-def load_questions(mentor_name):
+def load_questions(mentor_name, cursor):
     global QUESTIONS_LIST, QUESTIONS_ALL, QID_LIST
     QUESTIONS_ALL = []
-    connection, cursor = get_db_connection()
-    cursor.execute(f"SELECT id, question_text, options, correct_answer, concepts FROM {DatabaseConfig.QUESTIONS_TABLE} WHERE teacher_id = %s", (mentor_name,))
+    cursor.execute(f"SELECT {QuestionsTableConfig.ID}, {QuestionsTableConfig.QUESTION_TEXT}, {QuestionsTableConfig.OPTIONS}, {QuestionsTableConfig.CORRECT_ANSWER}, {QuestionsTableConfig.CONCEPTS} FROM {QuestionsTableConfig.QUESTIONS_TABLE} WHERE {QuestionsTableConfig.MENTOR_ID} = %s", (mentor_name,))
     for row in cursor.fetchall():
         id, question_text, options_json, correct_answer, concepts_json = row
         options = json.loads(options_json)
@@ -86,7 +85,9 @@ class MCQ(Question):
         super().__init__(question, options, correct_option, concepts, TYPE_MCQ, hash)
 
 class QuizState:
-    def __init__(self, questions):
+    def __init__(self, questions, max_quiz_session_id, student_name, mentor_name):
+        self.student_name = student_name
+        self.mentor_name = mentor_name
         self.questions = []
         for q in questions:
             if q['type'] == 'MCQ':
@@ -101,28 +102,23 @@ class QuizState:
         self.score = 0
         self.attempts = []
         # Generate a unique quiz session ID
-        connection, cursor = get_db_connection()
-        cursor.execute("SELECT MAX(quiz_session_id) FROM quiz_attempts")
-        max_session = cursor.fetchone()[0]
-        self.quiz_session_id = 1 if max_session is None else max_session + 1
+        self.quiz_session_id = int(max_quiz_session_id) + 1
 
     def next_question(self):
         if self.current_question < len(self.questions):
             return self.questions[self.current_question]
         return None
 
-    def check_answer(self, answer, time_taken):
+    def check_answer(self, answer, time_taken, cursor, connection):
         question = self.questions[self.current_question]
         is_correct = answer == question.correct_option
         
-        # Store attempt in database
-        connection, cursor = get_db_connection()
         try:
-            cursor.execute("""
-                INSERT INTO quiz_attempts 
-                (quiz_session_id, student_name, question_id, selected_answer, time_taken) 
-                VALUES (%s, %s, %s, %s, %s)
-            """, (self.quiz_session_id, NAME, question.hash, answer, time_taken))
+            cursor.execute(f"""
+                INSERT INTO {QuizAttemptsTableConfig.QUIZ_ATTEMPTS_TABLE} 
+                ({QuizAttemptsTableConfig.QUIZ_SESSION_ID}, {QuizAttemptsTableConfig.STUDENT_NAME}, {QuizAttemptsTableConfig.QUESTION_ID}, {QuizAttemptsTableConfig.SELECTED_ANSWER}, {QuizAttemptsTableConfig.TIME_TAKEN}, {QuizAttemptsTableConfig.MENTOR_NAME}) 
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (self.quiz_session_id, self.student_name, question.hash, answer, time_taken, self.mentor_name))
             connection.commit()
         except Exception as e:
             print(colored(f"Error saving attempt: {str(e)}", 'red'))
@@ -141,16 +137,22 @@ class QuizState:
         return is_correct
 
 def play(student_name, mentor_name):
-    global NAME, QUESTIONS_LIST
-    NAME = student_name
+    global QUESTIONS_LIST
+
+    connect, cursor = get_db_connection()
     
-    load_questions(mentor_name)
+    load_questions(mentor_name, cursor)
     
     if not QUESTIONS_LIST:
         print(colored("No questions available for this teacher.", 'red'))
         return None
+
+    cursor.execute(f"SELECT MAX({QuizAttemptsTableConfig.QUIZ_SESSION_ID}) FROM {QuizAttemptsTableConfig.QUIZ_ATTEMPTS_TABLE} WHERE {QuizAttemptsTableConfig.STUDENT_NAME} = %s AND {QuizAttemptsTableConfig.MENTOR_NAME} = %s", (student_name, mentor_name))
     
-    quiz = QuizState(QUESTIONS_LIST)
+    data = cursor.fetchone()
+    max_quiz_session_id = data[0] if data and data[0] is not None else 0
+
+    quiz = QuizState(QUESTIONS_LIST, max_quiz_session_id, student_name, mentor_name)
     
     print(colored("Starting Quiz...", 'green'))
     print()
@@ -184,7 +186,7 @@ def play(student_name, mentor_name):
         time_taken = end_time - start_time
         
         selected_answer = question.options[answer - 1]
-        is_correct = quiz.check_answer(selected_answer, time_taken)
+        is_correct = quiz.check_answer(selected_answer, time_taken, cursor, connect)
         
         print()
         if is_correct:

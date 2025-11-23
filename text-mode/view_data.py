@@ -5,13 +5,10 @@ import init_sql
 import colorama
 from termcolor import colored
 import json
-from init_sql import DatabaseConfig, get_db_connection
-from datetime import datetime, timedelta
+from init_sql import get_db_connection
+from config import QuizAttemptsTableConfig, QuestionsTableConfig, StudensTableConfig, TeachersTableConfig
 
 colorama.init()
-
-STUDENTS_DATABASE = "students_login_data"
-TEACHERS_DATABASE = "teachers_login_data"
 
 VM_CHOICE_DATA_VIEW = 1
 VM_CHOICE_DATA_CLEAR = 2
@@ -45,7 +42,7 @@ def delete_account(user_name, CURSOR, connect, database):
 
 def view_students(user_name, CURSOR):
     """View all students of a teacher in a nicely formatted list."""
-    CURSOR.execute(f'SELECT USER_NAME FROM {STUDENTS_DATABASE} WHERE MENTOR_NAME = %s', (user_name,))
+    CURSOR.execute(f'SELECT {StudensTableConfig.USER_NAME} FROM {StudensTableConfig.STUDENTS_TABLE} WHERE {StudensTableConfig.MENTOR_NAME} = %s', (user_name,))
     students = CURSOR.fetchall()
     
     if not students:
@@ -72,7 +69,7 @@ def view_students_performance(user_name):
     connection, cursor = get_db_connection()
     
     # Get all students for this teacher
-    cursor.execute(f'SELECT USER_NAME FROM {STUDENTS_DATABASE} WHERE MENTOR_NAME = %s', (user_name,))
+    cursor.execute(f'SELECT USER_NAME FROM {StudensTableConfig.STUDENTS_TABLE} WHERE {StudensTableConfig.MENTOR_NAME} = %s', (user_name,))
     students = cursor.fetchall()
     
     if not students:
@@ -110,14 +107,14 @@ def view_students_performance(user_name):
     # Get all attempts for this student
     query = f"""
         SELECT 
-            a.quiz_session_id,
-            MIN(a.attempt_date) as attempt_start,
+            a.{QuizAttemptsTableConfig.QUIZ_SESSION_ID},
+            MIN(a.{QuizAttemptsTableConfig.ATTEMPT_DATE}) as attempt_start,
             COUNT(*) as total_questions,
-            SUM(CASE WHEN a.selected_answer = q.correct_answer THEN 1 ELSE 0 END) as correct_answers
-        FROM quiz_attempts a
-        JOIN {DatabaseConfig.QUESTIONS_TABLE} q ON a.question_id = q.id
-        WHERE a.student_name = %s AND q.teacher_id = %s
-        GROUP BY a.quiz_session_id
+            SUM(CASE WHEN a.{QuizAttemptsTableConfig.SELECTED_ANSWER} = q.{QuestionsTableConfig.CORRECT_ANSWER} THEN 1 ELSE 0 END) as correct_answers
+        FROM {QuizAttemptsTableConfig.QUIZ_ATTEMPTS_TABLE} a
+        JOIN {QuestionsTableConfig.QUESTIONS_TABLE} q ON a.{QuizAttemptsTableConfig.QUESTION_ID} = q.{QuestionsTableConfig.ID}
+        WHERE a.{QuizAttemptsTableConfig.STUDENT_NAME} = %s AND q.{QuestionsTableConfig.MENTOR_ID} = %s
+        GROUP BY a.{QuizAttemptsTableConfig.QUIZ_SESSION_ID}
         ORDER BY attempt_start DESC
     """
     params = (selected_student, user_name)
@@ -126,7 +123,7 @@ def view_students_performance(user_name):
     attempts = cursor.fetchall()
     
     if not attempts:
-        print(colored("No quiz attempts found for this student.", 'yellow').center(80))
+        print(colored(f"No quiz attempts found for {user_name}.", 'yellow').center(80))
         print("=" * 80 + "\n")
         return
 
@@ -171,18 +168,18 @@ def view_students_performance(user_name):
     # Get detailed questions for the selected attempt
     cursor.execute(f"""
         SELECT 
-            q.question_text,
-            q.concepts,
-            q.correct_answer,
-            a.selected_answer,
-            a.time_taken,
-            q.difficulty
-        FROM quiz_attempts a
-        JOIN {DatabaseConfig.QUESTIONS_TABLE} q ON a.question_id = q.id
-        WHERE a.student_name = %s 
-        AND q.teacher_id = %s 
-        AND a.quiz_session_id = %s
-        ORDER BY a.attempt_date
+            q.{QuestionsTableConfig.QUESTION_TEXT},
+            q.{QuestionsTableConfig.CONCEPTS},
+            q.{QuestionsTableConfig.CORRECT_ANSWER},
+            a.{QuizAttemptsTableConfig.SELECTED_ANSWER},
+            a.{QuizAttemptsTableConfig.TIME_TAKEN},
+            q.{QuestionsTableConfig.DIFFICULTY}
+        FROM {QuizAttemptsTableConfig.QUIZ_ATTEMPTS_TABLE} a
+        JOIN {QuestionsTableConfig.QUESTIONS_TABLE} q ON a.{QuizAttemptsTableConfig.QUESTION_ID} = q.{QuestionsTableConfig.ID}
+        WHERE a.{QuizAttemptsTableConfig.STUDENT_NAME} = %s 
+        AND q.{QuestionsTableConfig.MENTOR_ID} = %s 
+        AND a.{QuizAttemptsTableConfig.QUIZ_SESSION_ID} = %s
+        ORDER BY a.{QuizAttemptsTableConfig.ATTEMPT_DATE}
     """, (selected_student, user_name, selected_session))
     
     questions = cursor.fetchall()
@@ -252,10 +249,10 @@ def view_students_performance(user_name):
             correct = int(stats['correct'])
             total = int(stats['total'])
             score = int((correct/total)*100) if total > 0 else 0
-            print(colored(f"{difficulty}", 'yellow').center(20) + 
-                  colored(f"Correct: {correct}", 'green').center(20) + 
-                  colored(f"Incorrect: {stats['incorrect']}", 'red').center(20) + 
-                  colored(f"Score: {score}%", 'yellow').center(20))
+            print(colored(f"{difficulty}", 'yellow').center(30) + 
+                  colored(f"Correct: {correct}", 'green').center(30) + 
+                  colored(f"Incorrect: {stats['incorrect']}", 'red').center(30) + 
+                  colored(f"Score: {score}%", 'yellow').center(30))
     
     # Print concept-wise analysis
     print("\n" + colored("Performance by Concept", 'cyan').center(80))
@@ -329,7 +326,7 @@ def view_quiz(teacher_id):
     connection, cursor = get_db_connection()
     
     # Get all unique concepts for this teacher
-    cursor.execute(f"SELECT DISTINCT concepts FROM {DatabaseConfig.QUESTIONS_TABLE} WHERE teacher_id = %s", (teacher_id,))
+    cursor.execute(f"SELECT DISTINCT {QuestionsTableConfig.CONCEPTS} FROM {QuestionsTableConfig.QUESTIONS_TABLE} WHERE {QuestionsTableConfig.MENTOR_ID} = %s", (teacher_id,))
     concepts_list = []
     for row in cursor.fetchall():
         if row[0]:  # if concepts is not None
@@ -365,10 +362,10 @@ def view_quiz(teacher_id):
 
     # Get all questions for this teacher
     cursor.execute(f"""
-        SELECT id, question_text, options, correct_answer, difficulty, concepts 
-        FROM {DatabaseConfig.QUESTIONS_TABLE} 
-        WHERE teacher_id = %s 
-        ORDER BY id
+        SELECT {QuestionsTableConfig.ID}, {QuestionsTableConfig.QUESTION_TEXT}, {QuestionsTableConfig.OPTIONS}, {QuestionsTableConfig.CORRECT_ANSWER}, {QuestionsTableConfig.DIFFICULTY}, {QuestionsTableConfig.CONCEPTS} 
+        FROM {QuestionsTableConfig.QUESTIONS_TABLE} 
+        WHERE {QuestionsTableConfig.MENTOR_ID} = %s 
+        ORDER BY {QuestionsTableConfig.ID}
     """, (teacher_id,))
     questions = cursor.fetchall()
     
@@ -423,7 +420,15 @@ def manage_questions(teacher_id):
     connection, cursor = get_db_connection()
     while True:
         # Fetch all questions for this teacher
-        cursor.execute(f"SELECT id, question_text, options, correct_answer, difficulty, concepts FROM {DatabaseConfig.QUESTIONS_TABLE} WHERE teacher_id = %s ORDER BY id", (teacher_id,))
+        cursor.execute(f"""SELECT {QuestionsTableConfig.ID}, 
+            {QuestionsTableConfig.QUESTION_TEXT}, 
+            {QuestionsTableConfig.OPTIONS}, 
+            {QuestionsTableConfig.CORRECT_ANSWER}, 
+            {QuestionsTableConfig.DIFFICULTY}, 
+            {QuestionsTableConfig.CONCEPTS} FROM 
+            {QuestionsTableConfig.QUESTIONS_TABLE} WHERE 
+            {QuestionsTableConfig.MENTOR_ID} = %s ORDER BY 
+            {QuestionsTableConfig.ID}""", (teacher_id,))
         questions = cursor.fetchall()
         if not questions:
             print(colored("No questions found.", 'yellow'))
@@ -481,7 +486,15 @@ def manage_questions(teacher_id):
                 continue
                 
             qid = id_map[int(qno)-1]
-            cursor.execute(f"SELECT id, question_text, options, correct_answer, difficulty, concepts FROM {DatabaseConfig.QUESTIONS_TABLE} WHERE id = %s AND teacher_id = %s", (qid, teacher_id))
+            cursor.execute(f"""SELECT {QuestionsTableConfig.ID}, 
+                           {QuestionsTableConfig.QUESTION_TEXT}, 
+                           {QuestionsTableConfig.OPTIONS}, 
+                           {QuestionsTableConfig.CORRECT_ANSWER}, 
+                           {QuestionsTableConfig.DIFFICULTY}, 
+                           {QuestionsTableConfig.CONCEPTS} FROM 
+                           {QuestionsTableConfig.QUESTIONS_TABLE} WHERE 
+                           {QuestionsTableConfig.ID} = %s AND 
+                           {QuestionsTableConfig.MENTOR_ID} = %s""", (qid, teacher_id))
             q = cursor.fetchone()
             
             if not q:
@@ -520,7 +533,9 @@ def manage_questions(teacher_id):
             
             if field == '1':
                 new_text = input(colored("\nEnter new question text: ", 'yellow'))
-                cursor.execute(f"UPDATE {DatabaseConfig.QUESTIONS_TABLE} SET question_text = %s WHERE id = %s", (new_text, id))
+                cursor.execute(f"""UPDATE {QuestionsTableConfig.QUESTIONS_TABLE} 
+                               SET {QuestionsTableConfig.QUESTION_TEXT} = %s 
+                               WHERE {QuestionsTableConfig.ID} = %s""", (new_text, id))
             elif field == '2':
                 print(colored("\nCurrent options:", 'cyan'))
                 for i, opt in enumerate(options, 1):
@@ -529,16 +544,22 @@ def manage_questions(teacher_id):
                 for i in range(1, 5):
                     new_opt = input(colored(f"\nEnter option {i}: ", 'yellow'))
                     new_opts.append(new_opt)
-                cursor.execute(f"UPDATE {DatabaseConfig.QUESTIONS_TABLE} SET options = %s WHERE id = %s", (json.dumps(new_opts), id))
+                print(colored("Enter the new correct option number : (1, 2, 3, 4)", "cyan"))
+                corr_opt = input(colored(">> ", 'green'))
+                if not corr_opt.isnumeric() or int(corr_opt) < 1 or int(corr_opt) > 4:
+                    print(colored("Invalid Input", 'red'))
+                    return
+                cursor.execute(f"""UPDATE {QuestionsTableConfig.QUESTIONS_TABLE} SET {QuestionsTableConfig.OPTIONS} = %s, {QuestionsTableConfig.CORRECT_ANSWER} = %s WHERE {QuestionsTableConfig.ID} = %s""", (json.dumps(new_opts), new_opts[corr_opt], id))
             elif field == '3':
                 print(colored("\nCurrent options:", 'cyan'))
                 for i, opt in enumerate(options, 1):
                     print(f"{i}. {opt}")
-                new_corr = input(colored("\nEnter new correct answer (type the full option): ", 'yellow'))
-                if new_corr not in options:
-                    print(colored("That answer is not in the options.", 'red'))
+                new_corr = input(colored("\nEnter new correct option number : (1, 2, 3, 4): ", 'yellow'))
+                if not new_corr.isnumeric() or int(new_corr) < 1 or int(new_corr) > 4:
+                    print(colored("Invalid Input", 'red'))
                     continue
-                cursor.execute(f"UPDATE {DatabaseConfig.QUESTIONS_TABLE} SET correct_answer = %s WHERE id = %s", (new_corr, id))
+                new_corr = options[int(new_corr)-1]
+                cursor.execute(f"UPDATE {QuestionsTableConfig.QUESTIONS_TABLE} SET {QuestionsTableConfig.CORRECT_ANSWER} = %s WHERE {QuestionsTableConfig.ID} = %s", (new_corr, id))
             elif field == '4':
                 print(colored("\nCurrent difficulty:", 'cyan'), difficulty)
                 print(colored("1.", 'yellow') + " EASY")
@@ -554,12 +575,12 @@ def manage_questions(teacher_id):
                 else:
                     print(colored("Invalid difficulty.", 'red'))
                     continue
-                cursor.execute(f"UPDATE {DatabaseConfig.QUESTIONS_TABLE} SET difficulty = %s WHERE id = %s", (new_diff, id))
+                cursor.execute(f"UPDATE {QuestionsTableConfig.QUESTIONS_TABLE} SET {QuestionsTableConfig.DIFFICULTY} = %s WHERE {QuestionsTableConfig.ID} = %s", (new_diff, id))
             elif field == '5':
                 print(colored("\nCurrent concepts:", 'cyan'), ', '.join(concepts))
                 new_concepts = input(colored("\nEnter new concepts (comma separated): ", 'yellow'))
                 new_concepts_list = [c.strip() for c in new_concepts.split(',') if c.strip()]
-                cursor.execute(f"UPDATE {DatabaseConfig.QUESTIONS_TABLE} SET concepts = %s WHERE id = %s", (json.dumps(new_concepts_list), id))
+                cursor.execute(f"UPDATE {QuestionsTableConfig.QUESTIONS_TABLE} SET {QuestionsTableConfig.CONCEPTS} = %s WHERE {QuestionsTableConfig.ID} = %s", (json.dumps(new_concepts_list), id))
             elif field == '6':
                 continue
             else:
@@ -576,14 +597,14 @@ def manage_questions(teacher_id):
                 continue
                 
             qid = id_map[int(qno)-1]
-            cursor.execute(f"SELECT id FROM {DatabaseConfig.QUESTIONS_TABLE} WHERE id = %s AND teacher_id = %s", (qid, teacher_id))
+            cursor.execute(f"SELECT id FROM {QuestionsTableConfig.QUESTIONS_TABLE} WHERE {QuestionsTableConfig.ID} = %s AND {QuestionsTableConfig.MENTOR_ID} = %s", (qid, teacher_id))
             if not cursor.fetchone():
                 print(colored("Question not found.", 'red'))
                 continue
                 
             confirm = input(colored("\nAre you sure you want to delete this question? (y/n): ", 'red'))
             if confirm.lower() == 'y':
-                cursor.execute(f"DELETE FROM {DatabaseConfig.QUESTIONS_TABLE} WHERE id = %s", (qid,))
+                cursor.execute(f"DELETE FROM {QuestionsTableConfig.QUESTIONS_TABLE} WHERE {QuestionsTableConfig.ID} = %s AND {QuestionsTableConfig.MENTOR_ID} = %s", (qid, teacher_id))
                 connection.commit()
                 print(colored("\nQuestion deleted successfully!", 'green'))
             else:
@@ -613,7 +634,7 @@ def main(choiceee, CURSOR, connect, passwd=None):
 
                 print("Admins Data : ")
 
-                CURSOR.execute(f"SELECT * FROM {TEACHERS_DATABASE}")
+                CURSOR.execute(f"SELECT {TeachersTableConfig.USER_NAME}, {TeachersTableConfig.PASSWORD} FROM {TeachersTableConfig.TEACHERS_TABLE}")
                 admins_table = PrettyTable(["Mentor Name", "Password"])
 
                 data = CURSOR.fetchall()
@@ -629,7 +650,7 @@ def main(choiceee, CURSOR, connect, passwd=None):
 
                 print("Students Data : ")
 
-                CURSOR.execute(f"SELECT * FROM {STUDENTS_DATABASE}")
+                CURSOR.execute(f"SELECT {StudensTableConfig.USER_NAME}, {StudensTableConfig.PASSWORD}, {StudensTableConfig.MENTOR_NAME} FROM {StudensTableConfig.STUDENTS_TABLE}")
                 students_table = PrettyTable(["Student Name", "Password", "Mentor Name"])
 
                 data = CURSOR.fetchall()
@@ -649,41 +670,25 @@ def main(choiceee, CURSOR, connect, passwd=None):
 
                 print("User Statistics : ")
 
-                with open("data/user_stats.bin", 'rb') as f:
-                    data = pickle.load(f)
-                    
-                    for i in data:
-                        print(f"Student Name : {i["User_name"]}")
-                        print(f"Mentor Name : {i["Mentor_name"]}")
+                CURSOR.execute(f"SELECT {QuizAttemptsTableConfig.STUDENT_NAME}, {QuizAttemptsTableConfig.MENTOR_NAME} FROM {QuizAttemptsTableConfig.QUIZ_ATTEMPTS_TABLE}")
 
-                        analysises = i["Analysis"]
+                data = CURSOR.fetchall()
 
-                        for j, analysis in enumerate(analysises):
-                            print(f"Attempt {j + 1}")
+                for entry in data:
+                    print("Analysis for Student :", entry[0], ", Mentor :", entry[1])
 
-                            print("Overall Report : ")
-                            data = analysis["overall"]
-                            print()
+                    CURSOR.execute(f"SELECT {QuizAttemptsTableConfig.QUIZ_SESSION_ID} FROM {QuizAttemptsTableConfig.QUIZ_ATTEMPTS_TABLE} WHERE {QuizAttemptsTableConfig.STUDENT_NAME} = %s AND {QuizAttemptsTableConfig.MENTOR_NAME} = %s", (entry[0], entry[1]))
 
-                            overall_data_table = PrettyTable(["Total Questions", "Correct", "Incorrect", "Score"])
-                            overall_data_table.add_row([data["correct"] + data["incorrect"], data["correct"], data["incorrect"], f'{analysis["score"]}%'])
+                    data = CURSOR.fetchall()
 
-                            print(overall_data_table)
+                    for j in data:
 
-                            print()
-                            print()
+                        print("Quiz Session ID :", j[0])
 
-                            data = analysis["q_wise"]
-                            print("Question Wise Report")
-                            qwise_data_table = PrettyTable(["QID", "Question", "Time", "Accuracy", "Level", "Key Concepts"])
-                            for d in data:
-                                qwise_data_table.add_row([d["QID"], d["Question"], d["Time"], colored("Correct" if d["Accuracy"] else "Incorrect", 'green' if d["Accuracy"] else 'red'), d["Level"], d["Key Concepts"]])
-                                qwise_data_table.add_row(["", "", "", "", "", ""])
-                            
-                            print(qwise_data_table)
+                        for j, entry in enumerate(data):
 
-                            print()
-                            print()
+                            #TODO: Fix this part later
+                            pass
 
             else:
                 print("Invalid choice")
@@ -703,7 +708,7 @@ def init():
         CURSOR, connect = init_sql.init()
         main(choiceee, CURSOR, connect)
 
-        init_sql.close()
+        init_sql.close_db_connection()
 
 if __name__ == "__main__":
     init()

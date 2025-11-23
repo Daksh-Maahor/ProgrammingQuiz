@@ -1,5 +1,5 @@
 import common_login_module as admin
-from init_sql import DatabaseConfig
+from config import StudensTableConfig
 import quiz_module as quiz
 import view_data
 import colorama
@@ -61,7 +61,7 @@ def main(cursor, connection):
 
         if not signed_in:
             if choice == 1:
-                USER_NAME, MENTOR_NAME, PASSWORD = admin.login(DatabaseConfig.STUDENTS_TABLE, cursor)
+                USER_NAME, MENTOR_NAME, PASSWORD = admin.login(StudensTableConfig.STUDENTS_TABLE, cursor)
                 signed_in = True
             elif choice == 2:
                 running = False
@@ -72,7 +72,7 @@ def main(cursor, connection):
         
         elif signed_in:
             if choice == 1:
-                PASSWORD = admin.update_passkey(DatabaseConfig.STUDENTS_TABLE, USER_NAME, cursor, connection)
+                PASSWORD = admin.update_passkey(StudensTableConfig.STUDENTS_TABLE, USER_NAME, cursor, connection)
             elif choice == 2:
                 # Play quiz and store attempts in database
                 quiz.play(USER_NAME, MENTOR_NAME)
@@ -83,7 +83,7 @@ def main(cursor, connection):
                 PASSWORD = None
             
             elif choice == 4:
-                view_data.delete_account(USER_NAME, cursor, connection, DatabaseConfig.STUDENTS_TABLE)
+                view_data.delete_account(USER_NAME, cursor, connection, StudensTableConfig.STUDENTS_TABLE)
                 USER_NAME = None
                 PASSWORD = None
                 signed_in = False

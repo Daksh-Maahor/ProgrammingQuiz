@@ -1,22 +1,7 @@
 import mysql.connector as sql
 from mysql.connector import Error
-from typing import Tuple, Optional
-import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-
-class DatabaseConfig:
-    """Database configuration class"""
-    HOST = os.getenv('DB_HOST', 'localhost')
-    USER = os.getenv('DB_USER', 'root')
-    PASSWORD = os.getenv('DB_PASSWORD', '')
-    DATABASE = 'programming_quiz'
-    STUDENTS_TABLE = "students_login_data"
-    TEACHERS_TABLE = "teachers_login_data"
-    QUESTIONS_TABLE = "questions"
-    QUIZ_ATTEMPTS_TABLE = "quiz_attempts"
+from typing import Tuple
+from config import DatabaseConfig, TeachersTableConfig, QuestionsTableConfig, QuizAttemptsTableConfig, StudensTableConfig
 
 class DatabaseConnection:
     """Database connection manager"""
@@ -60,56 +45,55 @@ class DatabaseConnection:
         try:
             # Create teachers table
             self._cursor.execute(f"""
-                CREATE TABLE IF NOT EXISTS {DatabaseConfig.TEACHERS_TABLE} (
-                    USER_NAME VARCHAR(100) NOT NULL PRIMARY KEY,
-                    PASSWD VARCHAR(100) NOT NULL,
-                    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                CREATE TABLE IF NOT EXISTS {TeachersTableConfig.TEACHERS_TABLE} (
+                    {TeachersTableConfig.USER_NAME} VARCHAR(100) NOT NULL PRIMARY KEY,
+                    {TeachersTableConfig.PASSWORD} VARCHAR(100) NOT NULL,
+                    {TeachersTableConfig.TIME_CREATED} TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
 
             # Create students table
             self._cursor.execute(f"""
-                CREATE TABLE IF NOT EXISTS {DatabaseConfig.STUDENTS_TABLE} (
-                    USER_NAME VARCHAR(100) NOT NULL,
-                    PASSWD VARCHAR(100) NOT NULL,
-                    MENTOR_NAME VARCHAR(100) NOT NULL,
-                    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    PRIMARY KEY(USER_NAME, MENTOR_NAME),
-                    FOREIGN KEY(MENTOR_NAME) REFERENCES {DatabaseConfig.TEACHERS_TABLE}(USER_NAME)
-                        ON DELETE CASCADE
+                CREATE TABLE IF NOT EXISTS {StudensTableConfig.STUDENTS_TABLE} (
+                    {StudensTableConfig.USER_NAME} VARCHAR(100) NOT NULL,
+                    {StudensTableConfig.PASSWORD} VARCHAR(100) NOT NULL,
+                    {StudensTableConfig.MENTOR_NAME} VARCHAR(100) NOT NULL,
+                    {StudensTableConfig.TIME_CREATED} TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY({StudensTableConfig.USER_NAME}, {StudensTableConfig.MENTOR_NAME}),
+                    FOREIGN KEY({StudensTableConfig.MENTOR_NAME}) REFERENCES {TeachersTableConfig.TEACHERS_TABLE}({TeachersTableConfig.USER_NAME})
+                    ON DELETE CASCADE
                 )
             """)
 
             # Create questions table
             self._cursor.execute(f"""
-                CREATE TABLE IF NOT EXISTS {DatabaseConfig.QUESTIONS_TABLE} (
-                    ID INT AUTO_INCREMENT PRIMARY KEY,
-                    MENTOR_ID VARCHAR(100) NOT NULL,
-                    QUESTION_TEXT TEXT NOT NULL,
-                    OPTIONS JSON NOT NULL,
-                    CORRECT_ANSWER VARCHAR(100) NOT NULL,
-                    DIFFICULTY ENUM('EASY', 'MEDIUM', 'HARD') NOT NULL,
-                    CONCEPTS JSON NOT NULL,
-                    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (teacher_id) REFERENCES {DatabaseConfig.TEACHERS_TABLE}(USER_NAME)
-                        ON DELETE CASCADE
+                CREATE TABLE IF NOT EXISTS {QuestionsTableConfig.QUESTIONS_TABLE} (
+                    {QuestionsTableConfig.ID} INT AUTO_INCREMENT PRIMARY KEY,
+                    {QuestionsTableConfig.MENTOR_ID} VARCHAR(100) NOT NULL,
+                    {QuestionsTableConfig.QUESTION_TEXT} TEXT NOT NULL,
+                    {QuestionsTableConfig.OPTIONS} JSON NOT NULL,
+                    {QuestionsTableConfig.CORRECT_ANSWER} VARCHAR(100) NOT NULL,
+                    {QuestionsTableConfig.DIFFICULTY} ENUM('EASY', 'MEDIUM', 'HARD') NOT NULL,
+                    {QuestionsTableConfig.CONCEPTS} JSON NOT NULL,
+                    {QuestionsTableConfig.CREATED_AT} TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY ({QuestionsTableConfig.MENTOR_ID}) REFERENCES {TeachersTableConfig.TEACHERS_TABLE}({TeachersTableConfig.USER_NAME})
+                    ON DELETE CASCADE
                 )
             """)
 
             # Create quiz_attempts table
             self._cursor.execute(f"""
-                CREATE TABLE IF NOT EXISTS {DatabaseConfig.QUIZ_ATTEMPTS_TABLE} (
-                    ATTEMPT_ID INT AUTO_INCREMENT PRIMARY KEY,
-                    QUIZ_SESSION_ID INT NOT NULL,
-                    STUDENT_NAME VARCHAR(100) NOT NULL,
-                    MENTOR_NAME VARCHAR(100) NOT NULL,
-                    QUESTION_ID INT NOT NULL,
-                    SELECTED_ANSWER VARCHAR(100) NOT NULL,
-                    TIME_TAKEN FLOAT NOT NULL,
-                    ATTEMPT_DATE TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (STUDENT_NAME, MENTOR_NAME) REFERENCES {DatabaseConfig.STUDENTS_TABLE}(USER_NAME, MENTOR_NAME)
+                CREATE TABLE IF NOT EXISTS {QuizAttemptsTableConfig.QUIZ_ATTEMPTS_TABLE} (
+                    {QuizAttemptsTableConfig.QUIZ_SESSION_ID} INT NOT NULL,
+                    {QuizAttemptsTableConfig.STUDENT_NAME} VARCHAR(100) NOT NULL,
+                    {QuizAttemptsTableConfig.MENTOR_NAME} VARCHAR(100) NOT NULL,
+                    {QuizAttemptsTableConfig.QUESTION_ID} INT NOT NULL,
+                    {QuizAttemptsTableConfig.SELECTED_ANSWER} VARCHAR(100) NOT NULL,
+                    {QuizAttemptsTableConfig.TIME_TAKEN} FLOAT NOT NULL,
+                    {QuizAttemptsTableConfig.ATTEMPT_DATE} TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY ({QuizAttemptsTableConfig.STUDENT_NAME}, {QuizAttemptsTableConfig.MENTOR_NAME}) REFERENCES {StudensTableConfig.STUDENTS_TABLE}({StudensTableConfig.USER_NAME}, {StudensTableConfig.MENTOR_NAME})
                         ON DELETE CASCADE,
-                    FOREIGN KEY (QUESTION_ID) REFERENCES {DatabaseConfig.QUESTIONS_TABLE}(id)
+                    FOREIGN KEY ({QuizAttemptsTableConfig.QUESTION_ID}) REFERENCES {QuestionsTableConfig.QUESTIONS_TABLE}({QuestionsTableConfig.ID})
                         ON DELETE CASCADE
                 )
             """)

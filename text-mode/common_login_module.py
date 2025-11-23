@@ -2,12 +2,9 @@ import getpass
 import colorama
 from termcolor import colored
 import os
-import pickle
 import re
 from typing import Optional, Tuple
-
-STUDENTS_DATABASE = "students_login_data"
-TEACHERS_DATABASE = "teachers_login_data"
+from config import StudensTableConfig, TeachersTableConfig
 
 colorama.init()
 
@@ -63,21 +60,40 @@ def login(database: str, CURSOR) -> Tuple[Optional[str], Optional[str], Optional
 
     mentor_name = None
 
-    if database == STUDENTS_DATABASE:
-        print(colored("Enter Mentor ID : ", 'cyan'))
-        mentor_name = sanitize_input(input(colored(">> ", 'green')))
+    if database == StudensTableConfig.STUDENTS_TABLE:
+        print(colored("Select the Mentor to be logged in for : ", 'cyan'))
+
+        CURSOR.execute(f'SELECT DISTINCT {StudensTableConfig.MENTOR_NAME} FROM {StudensTableConfig.STUDENTS_TABLE} WHERE {StudensTableConfig.USER_NAME} = %s', (user_name,))
+
+        if CURSOR.rowcount == 0:
+            print(colored(f"UserID {user_name} doesn't exist. Please Sign Up", 'red'))
+            print()
+            print()
+            return None, None, None
+        mentors = [row[0] for row in CURSOR.fetchall()]
+
+        for i, mentor in enumerate(mentors, 1):
+            print(f"{i}. {mentor}")
+        
+        mentor_choice = input(colored(">> ", 'green'))
+        if not mentor_choice.isdigit() or not (1 <= int(mentor_choice) <= len(mentors)):
+            print(colored("Invalid choice for mentor.", 'red'))
+            return None, None, None
+        
+        mentor_name = mentors[int(mentor_choice) - 1]
+        
         if not mentor_name or not validate_username(mentor_name):
             print(colored("Invalid mentor name format.", 'red'))
             return None, None, None
 
     try:
         if mentor_name:
-            CURSOR.execute(f'SELECT * FROM {database} WHERE USER_NAME = %s AND MENTOR_NAME = %s', (user_name, mentor_name))
+            CURSOR.execute(f'SELECT {StudensTableConfig.USER_NAME}, {StudensTableConfig.PASSWORD}, {StudensTableConfig.MENTOR_NAME} FROM {database} WHERE {StudensTableConfig.USER_NAME} = %s AND {StudensTableConfig.MENTOR_NAME} = %s', (user_name, mentor_name))
         else:
-            CURSOR.execute(f'SELECT * FROM {database} WHERE USER_NAME = %s', (user_name,))
+            CURSOR.execute(f'SELECT {TeachersTableConfig.USER_NAME}, {TeachersTableConfig.PASSWORD} FROM {database} WHERE {TeachersTableConfig.USER_NAME} = %s', (user_name,))
 
         if CURSOR.rowcount == 0:
-            if database == STUDENTS_DATABASE:
+            if database == StudensTableConfig.STUDENTS_TABLE:
                 print(colored(f"UserID {user_name} with Mentor {mentor_name} doesn't exist. Please Sign Up", 'red'))
             else:
                 print(colored(f"UserID {user_name} doesn't exist. Please Sign Up", 'red'))
@@ -102,7 +118,7 @@ def login(database: str, CURSOR) -> Tuple[Optional[str], Optional[str], Optional
                 print(colored(f"Welcome {user_name}", 'light_magenta'))
                 print()
                 print()
-                if len(data) == 3:  # if mentor in data
+                if database == StudensTableConfig.STUDENTS_TABLE:
                     mentor_name = data[2]
                     return user_name, mentor_name, pass_key
                 return user_name, None, pass_key
@@ -132,24 +148,20 @@ def sign_up(database: str, CURSOR, connect, mentor_name: Optional[str] = None) -
 
     try:
         if mentor_name:
-            CURSOR.execute(f'SELECT * FROM {database} WHERE USER_NAME = %s AND MENTOR_NAME = %s', (user_name, mentor_name))
+            CURSOR.execute(f'SELECT * FROM {StudensTableConfig.STUDENTS_TABLE} WHERE {StudensTableConfig.USER_NAME} = %s AND {StudensTableConfig.MENTOR_NAME} = %s', (user_name, mentor_name))
         else:
-            CURSOR.execute(f'SELECT * FROM {database} WHERE USER_NAME = %s', (user_name,))
+            CURSOR.execute(f'SELECT * FROM {TeachersTableConfig.TEACHERS_TABLE} WHERE {TeachersTableConfig.USER_NAME} = %s', (user_name,))
 
         if CURSOR.rowcount == 0:
             print(colored("Registration Successful.", 'green'))
             try:
                 if mentor_name:
-                    CURSOR.execute(f'INSERT INTO {database}(USER_NAME, PASSWD, MENTOR_NAME) VALUES(%s, %s, %s)', 
+                    CURSOR.execute(f'INSERT INTO {database}({StudensTableConfig.USER_NAME}, {StudensTableConfig.PASSWORD}, {StudensTableConfig.MENTOR_NAME}) VALUES(%s, %s, %s)', 
                                  (user_name, pass_key, mentor_name))
                 else:
-                    CURSOR.execute(f'INSERT INTO {database}(USER_NAME, PASSWD) VALUES(%s, %s)', 
+                    CURSOR.execute(f'INSERT INTO {database}({TeachersTableConfig.USER_NAME}, {TeachersTableConfig.PASSWORD}) VALUES(%s, %s)', 
                                  (user_name, pass_key))
                     os.makedirs(f'data/{user_name}', exist_ok=True)
-                    with open(f'data/{user_name}/questions.bin', 'wb') as f:
-                        pickle.dump({"concepts_list": [], "questions_list": []}, f)
-                    with open(f'data/{user_name}/user_stats.bin', 'wb') as f:
-                        pickle.dump([], f)
                 connect.commit()
                 print()
                 print()
@@ -183,9 +195,9 @@ def update_passkey(database: str, user_name: str, CURSOR, connect, mentor_name: 
 
     try:
         if not mentor_name:
-            CURSOR.execute(f'SELECT * FROM {database} WHERE USER_NAME = %s', (user_name,))
+            CURSOR.execute(f'SELECT * FROM {database} WHERE {TeachersTableConfig.USER_NAME} = %s', (user_name,))
         else:
-            CURSOR.execute(f'SELECT * FROM {database} WHERE USER_NAME = %s AND MENTOR_NAME = %s', (user_name, mentor_name))
+            CURSOR.execute(f'SELECT * FROM {database} WHERE {StudensTableConfig.USER_NAME} = %s AND {StudensTableConfig.MENTOR_NAME} = %s', (user_name, mentor_name))
 
         if CURSOR.rowcount == 0:
             print(colored(f"UserID {user_name} doesn't exist. Please Sign Up", 'red'))
@@ -211,10 +223,10 @@ def update_passkey(database: str, user_name: str, CURSOR, connect, mentor_name: 
                 
                 try:
                     if not mentor_name:
-                        CURSOR.execute(f'UPDATE {database} SET PASSWD = %s WHERE USER_NAME = %s', 
+                        CURSOR.execute(f'UPDATE {database} SET {TeachersTableConfig.PASSWORD} = %s WHERE {TeachersTableConfig.USER_NAME} = %s', 
                                      (new_pass_key, user_name))
                     else:
-                        CURSOR.execute(f'UPDATE {database} SET PASSWD = %s WHERE USER_NAME = %s AND MENTOR_NAME = %s', 
+                        CURSOR.execute(f'UPDATE {database} SET {StudensTableConfig.PASSWORD} = %s WHERE {StudensTableConfig.USER_NAME} = %s AND {StudensTableConfig.MENTOR_NAME} = %s', 
                                      (new_pass_key, user_name, mentor_name))
                     connect.commit()
                     

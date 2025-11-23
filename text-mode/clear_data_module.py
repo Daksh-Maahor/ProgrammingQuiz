@@ -1,14 +1,10 @@
-import pickle
 import colorama
 from termcolor import colored
-import shutil
 import getpass
 from prettytable import PrettyTable
+from config import StudensTableConfig, TeachersTableConfig, QuestionsTableConfig, QuizAttemptsTableConfig
 
 colorama.init()
-
-STUDENTS_DATABASE = "students_login_data"
-TEACHERS_DATABASE = "teachers_login_data"
 
 CDM_CHOICE_DATA_CLEAR          = 1
 CDM_CHOICE_SELECTED_DATA_CLEAR = 2
@@ -44,41 +40,30 @@ def pretty_print_list(lst, title='', indent=0, index=False):
             print('   '*(indent+1), i)
 
 def delete_account(user_name, CURSOR, connect, database):
-    if database == TEACHERS_DATABASE:
-        CURSOR.execute(f'DELETE FROM {database} WHERE USER_NAME = "{user_name}"')
-        connect.commit()
-        CURSOR.execute(f'DELETE FROM {STUDENTS_DATABASE} WHERE MENTOR_NAME = "{user_name}"')
-        connect.commit()
+    try:
+        if database == TeachersTableConfig.TEACHERS_TABLE:
+            CURSOR.execute(f'DELETE FROM {QuestionsTableConfig.QUESTIONS_TABLE} WHERE {QuestionsTableConfig.MENTOR_ID} = %s', (user_name,))
+            connect.commit()
+            CURSOR.execute(f'DELETE FROM {StudensTableConfig.STUDENTS_TABLE} WHERE {StudensTableConfig.MENTOR_NAME} = %s', (user_name,))
+            connect.commit()
+            CURSOR.execute(f'DELETE FROM {database} WHERE {TeachersTableConfig.USER_NAME} = %s', (user_name,))
+            connect.commit()
+        else:
+            CURSOR.execute(f'DELETE FROM {QuizAttemptsTableConfig.QUIZ_ATTEMPTS_TABLE} WHERE {QuizAttemptsTableConfig.STUDENT_NAME} = %s', (user_name,))
+            connect.commit()
+            CURSOR.execute(f'DELETE FROM {database} WHERE {TeachersTableConfig.USER_NAME} = %s', (user_name,))
+            connect.commit()
+        
+        print(colored(f"Account '{user_name}' deleted successfully.", 'green'))
+    except Exception as e:
+        print(colored(f"Error deleting account: {str(e)}", 'red'))
 
-        shutil.rmtree(f'data/{user_name}', ignore_errors=True)
-    else:
-        CURSOR.execute(f'DELETE FROM {database} WHERE USER_NAME = "{user_name}"')
-        connect.commit()
-
-        CURSOR.execute(f'SELECT USER_NAME FROM {TEACHERS_DATABASE}')
-        teachers_list = CURSOR.fetchall()
-
-        for teacher_id in teachers_list:
-            with open(f"data/{teacher_id[0]}/user_stats.bin", "rb") as f:
-                data = pickle.load(f) # list
-            
-                idx = -1
-                for i, j in enumerate(data):
-                    if j['User_name'] == user_name:
-                        idx = i
-                if idx >= 0:
-                    del data[idx]
-                
-            with open(f"data/{teacher_id[0]}/user_stats.bin", "wb") as f:
-                pickle.dump(data, f) # list
-
-def delete_questions(user_name, passwd):
+def delete_questions(user_name, passwd, CURSOR, connect):
     print(colored("Select : ", 'cyan'))
     print("1. Clear All Questions")
     print("2. Clear Selected Questions")
 
     choice = input(colored(">> ", 'green'))
-
     passs = getpass.getpass(colored("Enter password to continue : ", 'red'))
 
     if passs == passwd:
@@ -88,39 +73,46 @@ def delete_questions(user_name, passwd):
             choice = int(choice)
 
             if choice == 1:
-                with open(f'data/{user_name}/questions.bin', 'wb') as f:
-                    pickle.dump({"concepts_list" : [], "questions_list" : []}, f)
+                try:
+                    CURSOR.execute(f'DELETE FROM {QuestionsTableConfig.QUESTIONS_TABLE} WHERE {QuestionsTableConfig.MENTOR_ID} = %s', (user_name,))
+                    connect.commit()
+                    print(colored("All questions cleared.", 'green'))
+                except Exception as e:
+                    print(colored(f"Error clearing questions: {str(e)}", 'red'))
+
             elif choice == 2:
-                with open(f"data/{user_name}/questions.bin", "rb") as f:
-                    data = pickle.load(f)
-                    concepts = data["concepts_list"]
-                    questions = data["questions_list"]
+                try:
+                    CURSOR.execute(f'SELECT {QuestionsTableConfig.ID}, {QuestionsTableConfig.QUESTION_TEXT}, {QuestionsTableConfig.OPTIONS}, {QuestionsTableConfig.DIFFICULTY}, {QuestionsTableConfig.CONCEPTS} FROM {QuestionsTableConfig.QUESTIONS_TABLE} WHERE {QuestionsTableConfig.MENTOR_ID} = %s', (user_name,))
+                    questions = CURSOR.fetchall()
 
-                print("Questions List")
+                    if not questions:
+                        print(colored("No questions found.", 'yellow'))
+                        return
 
-                list_qns = data["questions_list"]
-                qns_table = PrettyTable(["Q. No.", "Question", "Options", "Level", "Concepts"])
-                for i, qn in enumerate(list_qns):
-                    qns_table.add_row([i+1, qn["question"], qn["options"], qn["level"], qn["concepts"]])
-                    qns_table.add_row(["", "", "", "", ""])
-                
-                print(qns_table)
-                print()
-                print()
+                    qns_table = PrettyTable(["Q. No.", "Question", "Options", "Difficulty", "Concepts"])
+                    for idx, qn in enumerate(questions):
+                        qns_table.add_row([idx+1, qn[1][:50], qn[2][:50], qn[3], qn[4][:50]])
+                        qns_table.add_row(["", "", "", "", ""])
+                    
+                    print(qns_table)
+                    print()
 
-                print(colored("Select an index to remove : ", 'cyan'))
-                idx = input(colored(">> ", 'green'))
+                    print(colored("Select an index to remove : ", 'cyan'))
+                    idx = input(colored(">> ", 'green'))
 
-                if not idx.isnumeric():
-                    print("Invalid Input")
-                else:
-                    idx = int(idx)
-
-                    if idx < len(questions) and idx >= 0:
-                        del questions[idx]
+                    if not idx.isnumeric():
+                        print("Invalid Input")
                     else:
-                        print("Invalid index")
-
-                with open(f"data/{user_name}/questions.bin", "wb") as f:
-                    pickle.dump({"concepts_list" : concepts, "questions_list" : questions}, f) # list
+                        idx = int(idx) - 1
+                        if 0 <= idx < len(questions):
+                            question_id = questions[idx][0]
+                            CURSOR.execute(f'DELETE FROM {QuestionsTableConfig.QUESTIONS_TABLE} WHERE {QuestionsTableConfig.ID} = %s', (question_id,))
+                            connect.commit()
+                            print(colored("Question deleted.", 'green'))
+                        else:
+                            print(colored("Invalid index", 'red'))
+                except Exception as e:
+                    print(colored(f"Error: {str(e)}", 'red'))
+    else:
+        print(colored("Incorrect password.", 'red'))
 
