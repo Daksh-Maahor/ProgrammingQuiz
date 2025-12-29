@@ -81,17 +81,20 @@ def main(cursor, connection):
                 signed_in = False
                 USER_NAME = None
                 PASSWORD = None
+                MENTOR_NAME = None
             
             elif choice == 4:
                 view_data.delete_account(USER_NAME, cursor, connection, StudensTableConfig.STUDENTS_TABLE)
                 USER_NAME = None
                 PASSWORD = None
+                MENTOR_NAME = None
                 signed_in = False
 
             elif choice == 5:
                 running = False
                 USER_NAME = None
                 PASSWORD = None
+                MENTOR_NAME = None
                 signed_in = False
             
             else:

@@ -1,7 +1,6 @@
 import getpass
 import colorama
 from termcolor import colored
-import os
 import re
 from typing import Optional, Tuple
 from config import StudensTableConfig, TeachersTableConfig
@@ -161,7 +160,6 @@ def sign_up(database: str, CURSOR, connect, mentor_name: Optional[str] = None) -
                 else:
                     CURSOR.execute(f'INSERT INTO {database}({TeachersTableConfig.USER_NAME}, {TeachersTableConfig.PASSWORD}) VALUES(%s, %s)', 
                                  (user_name, pass_key))
-                    os.makedirs(f'data/{user_name}', exist_ok=True)
                 connect.commit()
                 print()
                 print()

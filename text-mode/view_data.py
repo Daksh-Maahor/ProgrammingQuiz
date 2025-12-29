@@ -1,4 +1,3 @@
-import pickle
 import clear_data_module
 from prettytable import PrettyTable
 import init_sql
@@ -15,12 +14,12 @@ VM_CHOICE_DATA_CLEAR = 2
 VM_CHOICE_SELECTED_DATA_CLEAR = 3
 
 # to print the data in dictionaries
-def pretty_print(dictionary, indent=0):
+def pretty_print_dictionary(dictionary, indent=0):
     for i in dictionary:
         print("    "*indent + str(i), ":")
         j = dictionary[i]
         if type(j) == dict:
-            pretty_print(j, indent+1)
+            pretty_print_dictionary(j, indent+1)
         elif type(j) == list:
             pretty_print_list(j, indent=indent+1)
         else:
@@ -33,7 +32,7 @@ def pretty_print_list(lst, title='', indent=0):
         if type(i) == list:
             pretty_print_list(i, indent=indent+1)
         elif type(i) == dict:
-            pretty_print(i, indent+1)
+            pretty_print_dictionary(i, indent+1)
         else:
             print('   '*(indent+1), i)
 
@@ -69,7 +68,7 @@ def view_students_performance(user_name):
     connection, cursor = get_db_connection()
     
     # Get all students for this teacher
-    cursor.execute(f'SELECT USER_NAME FROM {StudensTableConfig.STUDENTS_TABLE} WHERE {StudensTableConfig.MENTOR_NAME} = %s', (user_name,))
+    cursor.execute(f'SELECT {StudensTableConfig.USER_NAME} FROM {StudensTableConfig.STUDENTS_TABLE} WHERE {StudensTableConfig.MENTOR_NAME} = %s', (user_name,))
     students = cursor.fetchall()
     
     if not students:
