@@ -8,8 +8,6 @@ import json
 
 colorama.init()
 
-#TODO: implement quiz attempts saving and loading
-
 QUESTIONS_LIST = None # to be used in program
 
 QUESTIONS_ALL = None # List of all questions
